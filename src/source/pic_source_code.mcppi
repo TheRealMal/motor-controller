@@ -15,6 +15,16 @@ Value=0
 Value=0
 [EEPROM_DEFINITION]
 Value=
+[INTERRUPT_DEFS]
+VECTOR_MODE=0
+IVT_BASE=00000008
+[PROGRAMMER_TYPE]
+Value=mikroE mikroProg
+[CODEGRIP_OPTIONS]
+CODEGRIP_SPEED=4
+CODEGRIP_VERIFY_AFTER=1
+CODEGRIP_SWBP_ENABLED=0
+CODEGRIP_PROGRAMMING_TYPE=
 [FILES]
 File0=pic_source_code.c
 Count=1
@@ -33,40 +43,28 @@ Count=0
 [OTHER_FILES]
 Count=0
 [SEARCH_PATH]
-Count=0
+Path0=C:\Users\Public\Documents\Mikroelektronika\mikroC PRO for PIC\Packages\FT800\Uses\
+Path1=C:\Users\Public\Documents\Mikroelektronika\mikroC PRO for PIC\Packages\FT810\Uses\
+Path2=C:\Users\Public\Documents\Mikroelektronika\mikroC PRO for PIC\Packages\FT812\Uses\
+Count=3
 [HEADER_PATH]
-Count=0
+Path0=C:\Users\Public\Documents\Mikroelektronika\mikroC PRO for PIC\Packages\FT800\Uses\
+Path1=C:\Users\Public\Documents\Mikroelektronika\mikroC PRO for PIC\Packages\FT810\Uses\
+Path2=C:\Users\Public\Documents\Mikroelektronika\mikroC PRO for PIC\Packages\FT812\Uses\
+Count=3
 [HEADERS]
 Count=0
 [PLDS]
 Count=0
 [Useses]
-File0=SPI
+File0=C_String
 File1=SPI_Ethernet
-File2=C_String
-File3=SPI_Ethernet_24j600
-File4=SPI_Glcd
-File5=Glcd_Fonts
-File6=Port_Expander
-File7=SPI_Lcd
-File8=Lcd_Constants
-File9=SPI_Lcd8
-File10=SPI_T6963C
-File11=Trigonometry
-Count=12
-[INTERRUPT_DEFS]
-VECTOR_MODE=0
-IVT_BASE=00000008
+File2=SPI
+Count=3
 [EXPANDED_NODES]
-Count=0
+0=pic_source_code.mcppi
+Count=1
 [LIB_EXPANDED_NODES]
 0=mikroE Libraries
 1=System Libraries
 Count=2
-[PROGRAMMER_TYPE]
-Value=mikroE mikroProg
-[CODEGRIP_OPTIONS]
-CODEGRIP_SPEED=4
-CODEGRIP_VERIFY_AFTER=1
-CODEGRIP_SWBP_ENABLED=0
-CODEGRIP_PROGRAMMING_TYPE=

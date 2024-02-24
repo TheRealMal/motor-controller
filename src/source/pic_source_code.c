@@ -21,7 +21,7 @@ sfr sbit SPI_Ethernet_Rst_Direction at TRISC0_bit;
 sfr sbit SPI_Ethernet_CS_Direction  at TRISC1_bit;
 
 unsigned char MACAddr[6] = {0x00, 0x14, 0xA5, 0x76, 0x19, 0x3f};
-unsigned char IPAddr[4] = {192,168,1,15};
+unsigned char IPAddr[4] = {10,211,55,5};
 unsigned char getRequest[10];
 
 typedef struct {

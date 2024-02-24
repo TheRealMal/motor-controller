@@ -23,8 +23,8 @@ L__SPI_Ethernet_UserTCP11:
 	ADDWFC      SPI_Ethernet_UserTCP_length_L0+1, 0 
 	MOVWF       FLOC__SPI_Ethernet_UserTCP+1 
 	CALL        _SPI_Ethernet_getByte+0, 0
-	MOVFF       FLOC__SPI_Ethernet_UserTCP+0, FSR1L+0
-	MOVFF       FLOC__SPI_Ethernet_UserTCP+1, FSR1H+0
+	MOVFF       FLOC__SPI_Ethernet_UserTCP+0, FSR1
+	MOVFF       FLOC__SPI_Ethernet_UserTCP+1, FSR1H
 	MOVF        R0, 0 
 	MOVWF       POSTINC1+0 
 ;pic_source_code.c,38 :: 		for (length=0; length<10; ++length) {
@@ -36,10 +36,10 @@ L_SPI_Ethernet_UserTCP1:
 ;pic_source_code.c,41 :: 		getRequest[length]=0;
 	MOVLW       _getRequest+0
 	ADDWF       SPI_Ethernet_UserTCP_length_L0+0, 0 
-	MOVWF       FSR1L+0 
+	MOVWF       FSR1 
 	MOVLW       hi_addr(_getRequest+0)
 	ADDWFC      SPI_Ethernet_UserTCP_length_L0+1, 0 
-	MOVWF       FSR1L+1 
+	MOVWF       FSR1H 
 	CLRF        POSTINC1+0 
 ;pic_source_code.c,43 :: 		if (memcmp(getRequest, "GET /", 5)){
 	MOVLW       _getRequest+0
