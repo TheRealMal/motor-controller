@@ -1,0 +1,73 @@
+[DEVICE]
+Name=P18F45K22
+Clock=8000000
+[MEMORY_MODEL]
+Value=0
+[BUILD_TYPE]
+Value=0
+[ACTIVE_TAB]
+Value=pic_source_code.c
+[USE_EEPROM]
+Value=0
+[USE_HEAP]
+Value=0
+[HEAP_SIZE]
+Value=0
+[EEPROM_DEFINITION]
+Value=
+[INTERRUPT_DEFS]
+VECTOR_MODE=0
+IVT_BASE=00000008
+[PROGRAMMER_TYPE]
+Value=mikroE mikroProg
+[CODEGRIP_OPTIONS]
+CODEGRIP_SPEED=4
+CODEGRIP_VERIFY_AFTER=1
+CODEGRIP_SWBP_ENABLED=0
+CODEGRIP_PROGRAMMING_TYPE=
+[FILES]
+File0=pic_source_code.c
+Count=1
+[BINARIES]
+Count=0
+[IMAGES]
+Count=0
+ActiveImageIndex=-1
+[OPENED_FILES]
+File0=pic_source_code.c
+Count=1
+[EEPROM]
+Count=0
+[ACTIVE_COMMENTS_FILES]
+Count=0
+[OTHER_FILES]
+Count=0
+[SEARCH_PATH]
+Path0=..\..\Public\Documents\Mikroelektronika\mikroC PRO for PIC\Packages\FT800\Uses\
+Path1=..\..\Public\Documents\Mikroelektronika\mikroC PRO for PIC\Packages\FT810\Uses\
+Path2=..\..\Public\Documents\Mikroelektronika\mikroC PRO for PIC\Packages\FT812\Uses\
+Count=3
+[HEADER_PATH]
+Path0=..\..\Public\Documents\Mikroelektronika\mikroC PRO for PIC\Packages\FT800\Uses\
+Path1=..\..\Public\Documents\Mikroelektronika\mikroC PRO for PIC\Packages\FT810\Uses\
+Path2=..\..\Public\Documents\Mikroelektronika\mikroC PRO for PIC\Packages\FT812\Uses\
+Count=3
+[HEADERS]
+Count=0
+[PLDS]
+Count=0
+[Useses]
+File0=C_String
+File1=SPI_Ethernet
+File2=SPI
+File3=ADC
+Count=4
+[EXPANDED_NODES]
+0=pic_source_code.mcppi
+Count=1
+[LIB_EXPANDED_NODES]
+0=mikroE Libraries
+1=System Libraries
+873=mikroBUS Board Definition API
+874=easypic_v7_P18F45K22
+Count=4
