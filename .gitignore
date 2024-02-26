@@ -1,1 +1,16 @@
+*.asm
+*.bmk
+*.c.ini
+*.cfg
+*.cp
+*.dbg
+*.dct
+*.dlt
+*.log
+*.lst
+*.mcl
+*.brk
+*.mcppi_callertable.txt
+*.user.dic
+src/scheme/Project Backups/
 src/Project Backups/
