@@ -49,35 +49,11 @@ unsigned int SPI_Ethernet_UserTCP(unsigned char *remoteHost, unsigned int remote
     }
 
     if (!memcmp(getRequest + 6, "TA", 2)){
-       while(1){
-                PORTB = 0b0001;
-                Delay_ms(delay);
-                PORTB = 0b0010;
-                Delay_ms(delay);
-                PORTB = 0b0100;
-                Delay_ms(delay);
-                PORTB = 0b1000;
-                Delay_ms(delay);
-       }
-
+        PORTB = 0b0101;
     } else if (!memcmp(getRequest + 6, "TB", 2)) {
-        PORTB = 0b1000;
-        Delay_ms(delay);
-        PORTB = 0b0100;
-        Delay_ms(delay);
-        PORTB = 0b0010;
-        Delay_ms(delay);
         PORTB = 0b0001;
-        Delay_ms(delay);
-        
-        PORTB = 0b1000;
-        Delay_ms(delay);
-        PORTB = 0b0100;
-        Delay_ms(delay);
-        PORTB = 0b0010;
-        Delay_ms(delay);
-        PORTB = 0b0001;
-        Delay_ms(delay);
+    } else if (!memcmp(getRequest + 6, "stop", 4)){
+        PORTB = 0b0000;
     }
 
     if (localPort != 80) {
@@ -101,9 +77,11 @@ unsigned int SPI_Ethernet_UserUDP(unsigned char *remoteHost, unsigned int remote
     Main program
 */
 void main() {
-    OSCCON = 0b00000001;
+    OSCCON = 0b0111000;
     TRISB = 0x00;
-    PORTB = 0x00;
+    TRISA = 0x00;
+    PORTB = 0b0000;
+    PORTA = 0x0001;
     ANSELC = 0; // Configure PORTC as digital
     ANSELD = 0; // Configure PORTD as digital
     TRISD = 0; // Configure PORTD as output
@@ -113,5 +91,7 @@ void main() {
 
     while(1) {
         SPI_Ethernet_doPacket(); // Process next received packet
+        PORTA = 0x00000001;
+        PORTA = 0x00000000;
     }
 }
