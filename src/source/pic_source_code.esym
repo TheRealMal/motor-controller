@@ -1,7 +1,0 @@
-D G "__PCH__" 0 0 ""5.117d""
-D G "__DEVICE__" 0 0 ""
-D G "__DATE__" 0 0 ""24-Feb-24""
-D G "__TIME__" 0 0 ""23:45:25""
-D G "_UNICODE" 0 0 ""?""
-D G "__EVAL" 0 0 ""?"" "Headers definitions"
-V G "HTTPheader" 0 2 "[1]" `36 
