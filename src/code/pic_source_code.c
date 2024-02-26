@@ -12,9 +12,9 @@ char IndexPage[] =
 <b>MOTOR CONTROL</b></font></td></tr><tr><td align=center bgcolor=#acfffff>\
 <input name=\"TL\" type=\"submit\" value=\"Left\"></td><td align=center bgcolor=#acfffff>\
 <input name=\"TR\" type=\"submit\" value=\"Right\"></td></tr><tr>\
-<td align=center bgcolor=#acfffff colspan=1><input name=\"+\" type=\"submit\" value=\"+\">\
+<td align=center bgcolor=#acfffff colspan=1><input name=\"INCR\" type=\"submit\" value=\"+\">\
 </td><td align=center bgcolor=#acfffff colspan=1>\
-<input name=\"-\" type=\"submit\" value=\"-\"></td></tr><tr>\
+<input name=\"DECR\" type=\"submit\" value=\"-\"></td></tr><tr>\
 <td align=center bgcolor=#acfffff colspan=2><input name=\"STOP\" type=\"submit\" value=\"Stop\">\
 </td></tr></table></form>\
 <script src=\"\" async defer></script></body></html>";
@@ -35,12 +35,14 @@ typedef struct {
 } TethPktFlags;
 
 typedef struct {
-    int right;
     int running;
+    int right;
     int delay;
+    int counter;
+    int port_value;
 } Config;
 
-Config cfg = {0,0,0};
+Config cfg = {0,0,2,0,0};
 
 /*
     TCP routine. This is where the user request to toggle LED A or LED B are processed
@@ -64,6 +66,10 @@ unsigned int SPI_Ethernet_UserTCP(unsigned char *remoteHost, unsigned int remote
         cfg.running = 1;
     } else if (!memcmp(getRequest + 6, "STOP", 4)){
         cfg.running = 0;
+    } else if (!memcmp(getRequest + 6, "DECR", 4) && cfg.delay > 2){
+        cfg.delay -= 1;
+    } else if (!memcmp(getRequest + 6, "INCR", 4)){
+        cfg.delay += 1;
     }
 
     if (localPort != 80) {
@@ -77,16 +83,16 @@ unsigned int SPI_Ethernet_UserTCP(unsigned char *remoteHost, unsigned int remote
 }
 
 void HandleMotor(){
-     if (!cfg.running){
-          PORTB = 0b0000;
+     if (cfg.running == 0){
+          cfg.port_value = 0b0000;
           return;
      }
      switch (cfg.right){
      case 0:
-          PORTB = 0b0101;
+          cfg.port_value = 0b0101;
           break;
      case 1:
-          PORTB = 0b0001;
+          cfg.port_value = 0b0001;
           break;
      }
 }
@@ -106,16 +112,21 @@ void main() {
     TRISB = 0x00;
     TRISA = 0x00;
     PORTB = 0b0000;
-    PORTA = 0x0001;
+    PORTA = 0x0000;
     ANSELC = 0; // Configure PORTC as digital
     ANSELD = 0; // Configure PORTD as digital
     TRISD = 0; // Configure PORTD as output
     PORTD = 0;
     SPI1_Init(); // Initialize SPI module
     SPI_Ethernet_Init(MACAddr, IPAddr, 0x01); // Initialize Ethernet module
-
     while(1) {
         SPI_Ethernet_doPacket(); // Process next received packet
         HandleMotor();
+        ++cfg.counter;
+        if (cfg.counter == cfg.delay) {
+           cfg.port_value ^= 0b1000;
+           cfg.counter = 0;
+        }
+        PORTB = cfg.port_value;
     }
 }
