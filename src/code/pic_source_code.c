@@ -9,13 +9,13 @@ char IndexPage[] =
 "<html><body><form name=\"input\" method=\"get\">\
 <table align=center width=500 bgcolor=#acfffff border=4>\
 <tr><td align=center colspan=2><font size=7 color=Black face=\"verdana\">\
-<b>MOTOR CONTROL</b></font></td></tr><tr><td align=center bgcolor=#acfffff>\
-<input name=\"TL\" type=\"submit\" value=\"Left\"></td><td align=center bgcolor=#acfffff>\
-<input name=\"TR\" type=\"submit\" value=\"Right\"></td></tr><tr>\
-<td align=center bgcolor=#acfffff colspan=1><input name=\"INCR\" type=\"submit\" value=\"+\">\
+<b>MOTOR CONTROL</b></font></td></tr><tr><td align=center bgcolor=#acfffff width=\"50%\">\
+<input name=\"TL\" type=\"submit\" value=\"Left\" style=\"width: 90%; background: 0;\"></td><td align=center bgcolor=#acfffff width=\"50%\">\
+<input name=\"TR\" type=\"submit\" value=\"Right\" style=\"width: 90%; background: 0;\"></td></tr><tr>\
+<td align=center bgcolor=#acfffff colspan=1><input name=\"INCR\" type=\"submit\" value=\"+\" style=\"width: 90%; background: 0;\">\
 </td><td align=center bgcolor=#acfffff colspan=1>\
-<input name=\"DECR\" type=\"submit\" value=\"-\"></td></tr><tr>\
-<td align=center bgcolor=#acfffff colspan=2><input name=\"STOP\" type=\"submit\" value=\"Stop\">\
+<input name=\"DECR\" type=\"submit\" value=\"-\" style=\"width: 90%; background: 0;\"></td></tr><tr>\
+<td align=center bgcolor=#acfffff colspan=2><input name=\"STOP\" type=\"submit\" value=\"Stop\" style=\"width: 90%; background: 0;\">\
 </td></tr></table></form>\
 <script src=\"\" async defer></script></body></html>";
 
