@@ -43,15 +43,9 @@ Count=0
 [OTHER_FILES]
 Count=0
 [SEARCH_PATH]
-Path0=..\..\Public\Documents\Mikroelektronika\mikroC PRO for PIC\Packages\FT800\Uses\
-Path1=..\..\Public\Documents\Mikroelektronika\mikroC PRO for PIC\Packages\FT810\Uses\
-Path2=..\..\Public\Documents\Mikroelektronika\mikroC PRO for PIC\Packages\FT812\Uses\
-Count=3
+Count=0
 [HEADER_PATH]
-Path0=..\..\Public\Documents\Mikroelektronika\mikroC PRO for PIC\Packages\FT800\Uses\
-Path1=..\..\Public\Documents\Mikroelektronika\mikroC PRO for PIC\Packages\FT810\Uses\
-Path2=..\..\Public\Documents\Mikroelektronika\mikroC PRO for PIC\Packages\FT812\Uses\
-Count=3
+Count=0
 [HEADERS]
 Count=0
 [PLDS]

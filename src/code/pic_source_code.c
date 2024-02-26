@@ -3,18 +3,19 @@ const char HTTPheader[] = "HTTP/1.1 200 OK\nContent-type:";
 const char HTTPMimeTypeHTML[] = "text/html\n\n";
 const char HTTPMimeTypeScript[] = "text/plain\n\n";
 const unsigned int delay = 80;
+
 // Index HTML page definition
 char IndexPage[] =
 "<html><body><form name=\"input\" method=\"get\">\
 <table align=center width=500 bgcolor=#acfffff border=4>\
 <tr><td align=center colspan=2><font size=7 color=Black face=\"verdana\">\
 <b>MOTOR CONTROL</b></font></td></tr><tr><td align=center bgcolor=#acfffff>\
-<input name=\"TA\" type=\"submit\" value=\"Left\"></td><td align=center bgcolor=#acfffff>\
-<input name=\"TB\" type=\"submit\" value=\"Right\"></td></tr><tr>\
+<input name=\"TL\" type=\"submit\" value=\"Left\"></td><td align=center bgcolor=#acfffff>\
+<input name=\"TR\" type=\"submit\" value=\"Right\"></td></tr><tr>\
 <td align=center bgcolor=#acfffff colspan=1><input name=\"+\" type=\"submit\" value=\"+\">\
 </td><td align=center bgcolor=#acfffff colspan=1>\
 <input name=\"-\" type=\"submit\" value=\"-\"></td></tr><tr>\
-<td align=center bgcolor=#acfffff colspan=2><input name=\"stop\" type=\"submit\" value=\"Stop\">\
+<td align=center bgcolor=#acfffff colspan=2><input name=\"STOP\" type=\"submit\" value=\"Stop\">\
 </td></tr></table></form>\
 <script src=\"\" async defer></script></body></html>";
 
@@ -25,7 +26,7 @@ sfr sbit SPI_Ethernet_Rst_Direction at TRISC0_bit;
 sfr sbit SPI_Ethernet_CS_Direction  at TRISC1_bit;
 
 unsigned char MACAddr[6] = {0x00, 0x14, 0xA5, 0x76, 0x19, 0x3f};
-unsigned char IPAddr[4] = {192,168,0,20};
+unsigned char IPAddr[4] = {10,211,55,5};
 unsigned char getRequest[10];
 
 typedef struct {
@@ -33,6 +34,13 @@ typedef struct {
     unsigned isBroadcast:1;
 } TethPktFlags;
 
+typedef struct {
+    int right;
+    int running;
+    int delay;
+} Config;
+
+Config cfg = {0,0,0};
 
 /*
     TCP routine. This is where the user request to toggle LED A or LED B are processed
@@ -48,12 +56,14 @@ unsigned int SPI_Ethernet_UserTCP(unsigned char *remoteHost, unsigned int remote
         return(0);
     }
 
-    if (!memcmp(getRequest + 6, "TA", 2)){
-        PORTB = 0b0101;
-    } else if (!memcmp(getRequest + 6, "TB", 2)) {
-        PORTB = 0b0001;
-    } else if (!memcmp(getRequest + 6, "stop", 4)){
-        PORTB = 0b0000;
+    if (!memcmp(getRequest + 6, "TL", 2)){
+        cfg.right = 0;
+        cfg.running = 1;
+    } else if (!memcmp(getRequest + 6, "TR", 2)) {
+        cfg.right = 1;
+        cfg.running = 1;
+    } else if (!memcmp(getRequest + 6, "STOP", 4)){
+        cfg.running = 0;
     }
 
     if (localPort != 80) {
@@ -64,6 +74,21 @@ unsigned int SPI_Ethernet_UserTCP(unsigned char *remoteHost, unsigned int remote
     length += SPI_Ethernet_putConstString(HTTPMimeTypeHTML);
     length += SPI_Ethernet_putString(IndexPage);
     return length;
+}
+
+void HandleMotor(){
+     if (!cfg.running){
+          PORTB = 0b0000;
+          return;
+     }
+     switch (cfg.right){
+     case 0:
+          PORTB = 0b0101;
+          break;
+     case 1:
+          PORTB = 0b0001;
+          break;
+     }
 }
 
 /*
@@ -91,7 +116,6 @@ void main() {
 
     while(1) {
         SPI_Ethernet_doPacket(); // Process next received packet
-        PORTA = 0x00000001;
-        PORTA = 0x00000000;
+        HandleMotor();
     }
 }
