@@ -2,7 +2,6 @@
 const char HTTPheader[] = "HTTP/1.1 200 OK\nContent-type:";
 const char HTTPMimeTypeHTML[] = "text/html\n\n";
 const char HTTPMimeTypeScript[] = "text/plain\n\n";
-const unsigned int delay = 80;
 
 // Index HTML page definition
 char IndexPage[] =
@@ -95,10 +94,10 @@ void HandleMotor(){
      }
      switch (cfg.right){
      case 0:
-          cfg.port_value = 0b0101;
+          cfg.port_value = 0b0111;
           break;
      case 1:
-          cfg.port_value = 0b0001;
+          cfg.port_value = 0b0011;
           break;
      }
 }
