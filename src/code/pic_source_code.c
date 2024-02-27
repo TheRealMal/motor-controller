@@ -18,9 +18,9 @@ char IndexPage[] =
 <tr><td align=center colspan=2><font size=2 color=Black face=\"verdana\">\
 <b>Speed</b></font></td></tr>\
 <tr>\
-<td align=center bgcolor=#acfffff colspan=1><input name=\"INCR\" type=\"submit\" value=\"+\" style=\"width: 90%; background: 0;\">\
+<td align=center bgcolor=#acfffff colspan=1><input name=\"INCR\" type=\"submit\" value=\"+\" style=\"width: 90%;background-color: rgb(94 248 146);\">\
 </td><td align=center bgcolor=#acfffff colspan=1>\
-<input name=\"DECR\" type=\"submit\" value=\"-\" style=\"width: 90%; background: 0;\"></td></tr><tr>\
+<input name=\"DECR\" type=\"submit\" value=\"-\" style=\"width: 90%;background-color: rgb(248 94 94);\"></td></tr><tr>\
 <td align=center bgcolor=#acfffff colspan=2><input name=\"STOP\" type=\"submit\" value=\"Stop\" style=\"width: 90%; background: 0;\">\
 </td></tr></table></form>\
 <script src=\"\" async defer></script></body></html>";
