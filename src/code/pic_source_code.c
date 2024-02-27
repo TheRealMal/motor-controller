@@ -9,9 +9,15 @@ char IndexPage[] =
 "<html><body><form name=\"input\" method=\"get\">\
 <table align=center width=500 bgcolor=#acfffff border=4>\
 <tr><td align=center colspan=2><font size=7 color=Black face=\"verdana\">\
-<b>MOTOR CONTROL</b></font></td></tr><tr><td align=center bgcolor=#acfffff width=\"50%\">\
+<b>MOTOR CONTROL</b></font></td></tr>\
+<tr><td align=center colspan=2><font size=2 color=Black face=\"verdana\">\
+<b>Direction</b></font></td></tr>\
+<tr><td align=center bgcolor=#acfffff width=\"50%\">\
 <input name=\"TL\" type=\"submit\" value=\"Left\" style=\"width: 90%; background: 0;\"></td><td align=center bgcolor=#acfffff width=\"50%\">\
-<input name=\"TR\" type=\"submit\" value=\"Right\" style=\"width: 90%; background: 0;\"></td></tr><tr>\
+<input name=\"TR\" type=\"submit\" value=\"Right\" style=\"width: 90%; background: 0;\"></td></tr>\
+<tr><td align=center colspan=2><font size=2 color=Black face=\"verdana\">\
+<b>Speed</b></font></td></tr>\
+<tr>\
 <td align=center bgcolor=#acfffff colspan=1><input name=\"INCR\" type=\"submit\" value=\"+\" style=\"width: 90%; background: 0;\">\
 </td><td align=center bgcolor=#acfffff colspan=1>\
 <input name=\"DECR\" type=\"submit\" value=\"-\" style=\"width: 90%; background: 0;\"></td></tr><tr>\
@@ -67,9 +73,9 @@ unsigned int SPI_Ethernet_UserTCP(unsigned char *remoteHost, unsigned int remote
     } else if (!memcmp(getRequest + 6, "STOP", 4)){
         cfg.running = 0;
     } else if (!memcmp(getRequest + 6, "DECR", 4) && cfg.delay > 2){
-        cfg.delay -= 1;
+        cfg.delay -= 5;
     } else if (!memcmp(getRequest + 6, "INCR", 4)){
-        cfg.delay += 1;
+        cfg.delay += 5;
     }
 
     if (localPort != 80) {
