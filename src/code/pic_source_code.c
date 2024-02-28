@@ -37,17 +37,18 @@ unsigned char getRequest[10];
 typedef struct {
     unsigned canCloseTCP:1;
     unsigned isBroadcast:1;
-} TethPktFlags;
+} TEthPktFlags;
 
 typedef struct {
     int running;
     int right;
     int delay;
-    int counter;
+    int tick_counter;
+    int steps_counter;
     int port_value;
 } Config;
 
-Config cfg = {0,0,2,0,0};
+Config cfg = {0,0,40,0,0,0};
 
 /*
     TCP routine. This is where the user request to toggle LED A or LED B are processed
@@ -71,10 +72,10 @@ unsigned int SPI_Ethernet_UserTCP(unsigned char *remoteHost, unsigned int remote
         cfg.running = 1;
     } else if (!memcmp(getRequest + 6, "STOP", 4)){
         cfg.running = 0;
-    } else if (!memcmp(getRequest + 6, "DECR", 4) && cfg.delay > 2){
-        cfg.delay -= 5;
-    } else if (!memcmp(getRequest + 6, "INCR", 4)){
-        cfg.delay += 5;
+    } else if (!memcmp(getRequest + 6, "DECR", 4)){
+        cfg.delay += 10;
+    } else if (!memcmp(getRequest + 6, "INCR", 4) && cfg.delay > 40){
+        cfg.delay -= 10;
     }
 
     if (localPort != 80) {
@@ -90,8 +91,17 @@ unsigned int SPI_Ethernet_UserTCP(unsigned char *remoteHost, unsigned int remote
 void HandleMotor(){
      if (cfg.running == 0){
           cfg.port_value = 0b0000;
+          //cfg.steps_counter = 10;
           return;
      }
+     /*
+     if (cfg.steps_counter == 0){
+          cfg.port_value = 0b0000;
+          cfg.steps_counter = 10;
+          cfg.running = 0;
+          return;
+     }
+     */
      switch (cfg.right){
      case 0:
           cfg.port_value = 0b0111;
@@ -127,10 +137,11 @@ void main() {
     while(1) {
         SPI_Ethernet_doPacket(); // Process next received packet
         HandleMotor();
-        ++cfg.counter;
-        if (cfg.counter == cfg.delay) {
+        ++cfg.tick_counter;
+        if (cfg.tick_counter == cfg.delay) {
            cfg.port_value ^= 0b1000;
-           cfg.counter = 0;
+           cfg.tick_counter = 0;
+           //--cfg.steps_counter;
         }
         PORTB = cfg.port_value;
     }
