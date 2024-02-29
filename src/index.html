@@ -1,0 +1,143 @@
+<html>
+<style>
+  input {
+    border: 0;
+    cursor: pointer;
+  }
+  button {
+    width: 100%;
+    background: 0;
+    cursor: pointer;
+  }
+  input[id="ip"] {
+    background: 0;
+    border-bottom: 1px solid black;
+    margin-bottom: 8px;
+  }
+  input[id="ip"]:focus {
+    outline: none;
+  }
+  table {
+    background-color: #acffff;
+    border-radius: 5px;
+    width: 500;
+  }
+  .active-td {
+    background-color: #52efef;
+  }
+  </style>
+  <script type="text/javascript">
+    const MaxSpeed = 100;
+    const MinSpeed = 25;
+
+    function sendRequest(body) {
+        let ip = document.querySelector("input[id=ip]").value
+        fetch(`http://${ip}:80/?${body}`, {
+            method: "GET",
+            mode: 'no-cors'
+        })
+    }
+
+    function typeButtonClick(element_id) {
+        let tButtons = document.querySelectorAll("td.motor-type");
+        for (tb of tButtons) {
+            tb.className = "motor-type";
+        }
+        document.querySelector(`td.motor-type[id=${element_id}]`).className = "motor-type active-td";
+        sendRequest(element_id)
+    }
+    function dirButtonClick(element_id) {
+        let tButtons = document.querySelectorAll("td.direction");
+        for (tb of tButtons) {
+            tb.className = "direction";
+        }
+        document.querySelector(`td.direction[id=${element_id}]`).className = "direction active-td";
+        sendRequest(element_id)
+    }
+    function controlButtonClick() {
+        let el = document.querySelector("button[id=CTRL]");
+        let newText = el.innerText === "STOP" ? "START" : "STOP";
+        el.innerText = newText;
+        sendRequest(newText)
+    }
+    function speedButtonClick(element_id) {
+        let speed_el = document.querySelector("b[id=speed]");
+        let curr_speed = Number.parseInt(speed_el.innerText)
+        
+        switch (element_id) {
+            case "SDECR":
+                if (curr_speed == MinSpeed) {
+                    return
+                }
+                speed_el.innerText = curr_speed - 25;
+                sendRequest(`S${curr_speed-25}`)
+                break;
+            case "SINCR":
+                if (curr_speed == MaxSpeed) {
+                    return
+                }
+                speed_el.innerText = curr_speed + 25;
+                sendRequest(`S${curr_speed+25}`)
+                break;
+        }
+
+    }
+  </script>
+<body>
+  <form name="input" method="get">
+    <table align=center width=500 border=4>
+      <tr>
+        <td align=center colspan=2>
+            <font size=7 color=Black face="verdana"><b>MOTOR CONTROL</b></font>
+            <label for="ip">IP:</label>
+            <input type="text" id="ip" name="ip" required placeholder="10.211.55.5"/>
+        </td>
+      </tr>
+      <tr>
+        <td align=center colspan=2>
+          <font size=2 color=Black face="verdana"><b>Motor Type</b></font>
+        </td>
+      </tr>
+      <tr>
+        <td align=center width="50%" class="motor-type" id="MSTEP">
+            <button type="button" id="MSTEP" onclick="typeButtonClick(this.id)">Stepper</button>
+        </td>
+        <td align=center width="50%" class="motor-type" id="MASYNC">
+            <button type="button" id="MASYNC" onclick="typeButtonClick(this.id)">Async</button>
+        </td>
+      </tr>
+      <tr>
+        <td align=center colspan=2>
+          <font size=2 color=Black face="verdana"><b>Direction</b></font>
+        </td>
+      </tr>
+      <tr>
+        <td align=center width="50%" class="direction" id="DLEFT">
+            <button type="button" id="DLEFT" onclick="dirButtonClick(this.id)">Left</button>
+        </td>
+        <td align=center width="50%" class="direction" id="DRIGHT">
+            <button type="button" id="DRIGHT" onclick="dirButtonClick(this.id)">Right</button>
+        </td>
+      </tr>
+      <tr>
+        <td align=center colspan=2>
+          <font size=2 color=Black face="verdana"><b>Speed:<b id="speed">100</b>%</b></font>
+        </td>
+      </tr>
+      <tr>
+        <td align=center width="50%" bgcolor=#5ef892>
+            <button type="button" id="SINCR" onclick="speedButtonClick(this.id)">+</button>
+        </td>
+        <td align=center width="50%" bgcolor=#f85e5e>
+            <button type="button" id="SDECR" onclick="speedButtonClick(this.id)">-</button>
+        </td>
+      </tr>
+      <tr>
+        <td align=center width="50%" colspan="2">
+            <button type="button" id="CTRL" onclick="controlButtonClick()">START</button>
+        </td>
+      </tr>
+    </table>
+  </form>
+</body>
+</html>
