@@ -58,7 +58,7 @@
         let el = document.querySelector("button[id=CTRL]");
         let newText = el.innerText === "STOP" ? "START" : "STOP";
         el.innerText = newText;
-        sendRequest(newText)
+        sendRequest(el.innerText === "STOP" ? "STRT" : "STP")
     }
     function speedButtonClick(element_id) {
         let speed_el = document.querySelector("b[id=speed]");
@@ -99,11 +99,11 @@
         </td>
       </tr>
       <tr>
-        <td align=center width="50%" class="motor-type" id="MSTEP">
-            <button type="button" id="MSTEP" onclick="typeButtonClick(this.id)">Stepper</button>
+        <td align=center width="50%" class="motor-type" id="MST">
+            <button type="button" id="MST" onclick="typeButtonClick(this.id)">Stepper</button>
         </td>
-        <td align=center width="50%" class="motor-type" id="MASYNC">
-            <button type="button" id="MASYNC" onclick="typeButtonClick(this.id)">Async</button>
+        <td align=center width="50%" class="motor-type" id="MA">
+            <button type="button" id="MA" onclick="typeButtonClick(this.id)">Async</button>
         </td>
       </tr>
       <tr>
@@ -112,11 +112,11 @@
         </td>
       </tr>
       <tr>
-        <td align=center width="50%" class="direction" id="DLEFT">
-            <button type="button" id="DLEFT" onclick="dirButtonClick(this.id)">Left</button>
+        <td align=center width="50%" class="direction" id="DL">
+            <button type="button" id="DL" onclick="dirButtonClick(this.id)">Left</button>
         </td>
-        <td align=center width="50%" class="direction" id="DRIGHT">
-            <button type="button" id="DRIGHT" onclick="dirButtonClick(this.id)">Right</button>
+        <td align=center width="50%" class="direction" id="DR">
+            <button type="button" id="DR" onclick="dirButtonClick(this.id)">Right</button>
         </td>
       </tr>
       <tr>

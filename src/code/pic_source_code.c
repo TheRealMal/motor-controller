@@ -2,7 +2,7 @@
 const char HTTPheader[] = "HTTP/1.1 200 OK\nContent-type:";
 const char HTTPMimeTypeHTML[] = "text/html\n\n";
 const char HTTPMimeTypeScript[] = "text/plain\n\n";
-
+const char OKStatus[] = "OK";
 // Ethernet NIC interface definitions
 sfr sbit SPI_Ethernet_Rst at RC0_bit;
 sfr sbit SPI_Ethernet_CS at RC1_bit;
@@ -48,21 +48,25 @@ unsigned int SPI_Ethernet_UserTCP(unsigned char *remoteHost,
     return (0);
   }
 
-  if (!memcmp(getRequest + 6, "DLEFT", 5)) {
-    cfg.right = 0;
-  } else if (!memcmp(getRequest + 6, "DRIGHT", 6)) {
-    cfg.right = 1;
-  } else if (!memcmp(getRequest + 6, "STOP", 4)) {
+  if (!memcmp(getRequest + 6, "STP", 3)) {
     cfg.running = 0;
-  } else if (!memcmp(getRequest + 6, "START", 5)) {
+  } else if (!memcmp(getRequest + 6, "STRT", 4)) {
     cfg.running = 1;
-  } else if (!memcmp(getRequest + 6, "SDECR", 5)) {
-    cfg.delay += 10;
-  } else if (!memcmp(getRequest + 6, "SINCR", 5) && cfg.delay > 40) {
-    cfg.delay -= 10;
-  } else if (!memcmp(getRequest + 6, "MSTEP", 5)) {
+  } else if (memcmp(getRequest + 6, "DL", 2) == 0) {
+    cfg.right = 0;
+  } else if (memcmp(getRequest + 6, "DR", 2) == 0) {
+    cfg.right = 1;
+  } else if (memcmp(getRequest + 6, "S100", 4) == 0) {
+    cfg.delay = 40;
+  } else if (memcmp(getRequest + 6, "S75", 3) == 0) {
+    cfg.delay = 60;
+  } else if (memcmp(getRequest + 6, "S50", 3) == 0) {
+    cfg.delay = 80;
+  } else if (memcmp(getRequest + 6, "S25", 3) == 0) {
+    cfg.delay = 100;
+  } else if (memcmp(getRequest + 6, "MST", 3) == 0) {
     cfg.motor_type = 0;
-  } else if (!memcmp(getRequest + 6, "MASYNC", 6)) {
+  } else if (memcmp(getRequest + 6, "MA", 2) == 0) {
     cfg.motor_type = 1;
   }
 
@@ -72,16 +76,18 @@ unsigned int SPI_Ethernet_UserTCP(unsigned char *remoteHost,
 
   length = SPI_Ethernet_putConstString(HTTPheader);
   length += SPI_Ethernet_putConstString(HTTPMimeTypeHTML);
+  length += SPI_Ethernet_putConstString(OKStatus);
   return length;
 }
 
 void HandleMotor() {
   int new_port_value = 0b0000;
-  if (cfg.running == 0) {
+  if (!cfg.running) {
     cfg.port_value = new_port_value;
     // cfg.steps_counter = 10;
     return;
   }
+  new_port_value = 0b0011;
   /*
   if (cfg.steps_counter == 0){
        cfg.port_value = 0b0000;
