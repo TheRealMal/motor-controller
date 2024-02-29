@@ -9,13 +9,27 @@
     background: 0;
     cursor: pointer;
   }
-  input[id="ip"] {
+  button[id="STOP"], button[id="CLEAR"], button[id="START"] {
+    margin: 2px 2px 2px 2px;
+    width: 25%;
+  }
+  input {
     background: 0;
     border-bottom: 1px solid black;
     margin-bottom: 8px;
   }
-  input[id="ip"]:focus {
+  input:focus {
     outline: none;
+  }
+  input[id=speed] {
+    width: 60px;
+    margin-bottom: 2px;
+    text-align: center;
+  }
+  input[id=angle] {
+    width: 60px;
+    margin-bottom: 2px;
+    text-align: center;
   }
   table {
     background-color: #acffff;
@@ -25,10 +39,20 @@
   .active-td {
     background-color: #52efef;
   }
+  .completed-task {
+    background-color: #72f984;
+  }
   </style>
   <script type="text/javascript">
     const MaxSpeed = 100;
     const MinSpeed = 25;
+    var config = {
+      "id": "",
+      "type": "",
+      "direction": "",
+      "speed": "",
+      "angle": "" 
+    };
 
     function sendRequest(body) {
         let ip = document.querySelector("input[id=ip]").value
@@ -37,6 +61,34 @@
             mode: 'no-cors'
         })
     }
+    function updateConfig(key, value) {
+      config[key] = value;
+    }
+    function completeTask(id) {
+      document.querySelectorAll("table[id='tasks'] tr")[id+2].className = "completed-task"
+    }
+    function addButtonClick(){
+      config.id = document.querySelectorAll("table[id='tasks'] tr").length - 2
+      config.speed = document.querySelector("input[id=speed]").value
+      config.angle = document.querySelector("input[id=angle]").value
+      document.querySelector("table[id='tasks']").innerHTML += `<tr>
+        <td align=center width="8%">
+          <font size=1 color=Black face="verdana"><b>${config.id}</b></font>
+        </td>
+        <td align=center width="23%">
+          <font size=1 color=Black face="verdana"><b>${config.type}</b></font>
+        </td>
+        <td align=center width="23%">
+          <font size=1 color=Black face="verdana"><b>${config.direction}</b></font>
+        </td>
+        <td align=center width="23%">
+          <font size=1 color=Black face="verdana"><b>${config.speed}</b></font>
+        </td>
+        <td align=center width="23%">
+          <font size=1 color=Black face="verdana"><b>${config.angle}</b></font>
+        </td>
+      </tr>`
+    }
 
     function typeButtonClick(element_id) {
         let tButtons = document.querySelectorAll("td.motor-type");
@@ -44,7 +96,7 @@
             tb.className = "motor-type";
         }
         document.querySelector(`td.motor-type[id=${element_id}]`).className = "motor-type active-td";
-        sendRequest(element_id)
+        updateConfig("type", element_id)
     }
     function dirButtonClick(element_id) {
         let tButtons = document.querySelectorAll("td.direction");
@@ -52,35 +104,7 @@
             tb.className = "direction";
         }
         document.querySelector(`td.direction[id=${element_id}]`).className = "direction active-td";
-        sendRequest(element_id)
-    }
-    function controlButtonClick() {
-        let el = document.querySelector("button[id=CTRL]");
-        let newText = el.innerText === "STOP" ? "START" : "STOP";
-        el.innerText = newText;
-        sendRequest(el.innerText === "STOP" ? "STRT" : "STP")
-    }
-    function speedButtonClick(element_id) {
-        let speed_el = document.querySelector("b[id=speed]");
-        let curr_speed = Number.parseInt(speed_el.innerText)
-        
-        switch (element_id) {
-            case "SDECR":
-                if (curr_speed == MinSpeed) {
-                    return
-                }
-                speed_el.innerText = curr_speed - 25;
-                sendRequest(`S${curr_speed-25}`)
-                break;
-            case "SINCR":
-                if (curr_speed == MaxSpeed) {
-                    return
-                }
-                speed_el.innerText = curr_speed + 25;
-                sendRequest(`S${curr_speed+25}`)
-                break;
-        }
-
+        updateConfig("direction", element_id)
     }
   </script>
 <body>
@@ -99,11 +123,11 @@
         </td>
       </tr>
       <tr>
-        <td align=center width="50%" class="motor-type" id="MST">
-            <button type="button" id="MST" onclick="typeButtonClick(this.id)">Stepper</button>
+        <td align=center width="50%" class="motor-type" id="Stepper">
+            <button type="button" id="Stepper" onclick="typeButtonClick(this.id)">Stepper</button>
         </td>
-        <td align=center width="50%" class="motor-type" id="MA">
-            <button type="button" id="MA" onclick="typeButtonClick(this.id)">Async</button>
+        <td align=center width="50%" class="motor-type" id="Async">
+            <button type="button" id="Async" onclick="typeButtonClick(this.id)">Async</button>
         </td>
       </tr>
       <tr>
@@ -112,29 +136,62 @@
         </td>
       </tr>
       <tr>
-        <td align=center width="50%" class="direction" id="DL">
-            <button type="button" id="DL" onclick="dirButtonClick(this.id)">Left</button>
+        <td align=center width="50%" class="direction" id="Left">
+            <button type="button" id="Left" onclick="dirButtonClick(this.id)">Left</button>
         </td>
-        <td align=center width="50%" class="direction" id="DR">
-            <button type="button" id="DR" onclick="dirButtonClick(this.id)">Right</button>
+        <td align=center width="50%" class="direction" id="Right">
+            <button type="button" id="Right" onclick="dirButtonClick(this.id)">Right</button>
         </td>
       </tr>
       <tr>
         <td align=center colspan=2>
-          <font size=2 color=Black face="verdana"><b>Speed:<b id="speed">100</b>%</b></font>
+          <font size=2 color=Black face="verdana"><b>Speed:</font>
+          <input type="number" id="speed" name="speed" min=10 step=10 required placeholder="10"/>
+          <font size=2 color=Black face="verdana"><b>RPM</font>
         </td>
       </tr>
       <tr>
-        <td align=center width="50%" bgcolor=#5ef892>
-            <button type="button" id="SINCR" onclick="speedButtonClick(this.id)">+</button>
-        </td>
-        <td align=center width="50%" bgcolor=#f85e5e>
-            <button type="button" id="SDECR" onclick="speedButtonClick(this.id)">-</button>
+        <td align=center colspan=2>
+          <font size=2 color=Black face="verdana"><b>Angle:</font>
+          <input type="number" id="angle" name="angle" min=0 required placeholder="1"/>
+          <font size=2 color=Black face="verdana"><b>°</font>
         </td>
       </tr>
       <tr>
         <td align=center width="50%" colspan="2">
-            <button type="button" id="CTRL" onclick="controlButtonClick()">START</button>
+            <button type="button" id="ADD" onclick="addButtonClick()">Add</button>
+        </td>
+      </tr>
+    </table>
+    <br>
+    <table align=center width=500 border=4 id="tasks">
+      <tr>
+        <td align=center colspan=5>
+            <font size=5 color=Black face="verdana"><b>Tasks</b></font>
+        </td>
+      </tr>
+      <tr>
+        <td align=center colspan=5>
+            <button type="button" id="START" onclick="">Start</button>
+            <button type="button" id="STOP" onclick="">Stop</button>
+            <button type="button" id="CLEAR" onclick="">Clear</button>
+        </td>
+      </tr>
+      <tr>
+        <td align=center width="8%">
+          <font size=2 color=Black face="verdana"><b>ID</b></font>
+        </td>
+        <td align=center width="23%">
+          <font size=2 color=Black face="verdana"><b>Motor</b></font>
+        </td>
+        <td align=center width="23%">
+          <font size=2 color=Black face="verdana"><b>Direction</b></font>
+        </td>
+        <td align=center width="23%">
+          <font size=2 color=Black face="verdana"><b>Speed</b></font>
+        </td>
+        <td align=center width="23%">
+          <font size=2 color=Black face="verdana"><b>Angle</b></font>
         </td>
       </tr>
     </table>
