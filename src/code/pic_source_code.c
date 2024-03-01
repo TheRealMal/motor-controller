@@ -3,6 +3,7 @@ const char HTTPheader[] = "HTTP/1.1 200 OK\nContent-type:";
 const char HTTPMimeTypeHTML[] = "text/html\n\n";
 const char HTTPMimeTypeScript[] = "text/plain\n\n";
 const char OKStatus[] = "OK";
+const char BADStatus[] = "ERROR";
 // Ethernet NIC interface definitions
 sfr sbit SPI_Ethernet_Rst at RC0_bit;
 sfr sbit SPI_Ethernet_CS at RC1_bit;
@@ -47,55 +48,63 @@ unsigned int SPI_Ethernet_UserTCP(unsigned char *remoteHost,
   if (memcmp(getRequest, "GET /", 5)) {
     return (0);
   }
-
-  if (!memcmp(getRequest + 6, "STP", 3)) {
-    cfg.running = 0;
-  } else if (!memcmp(getRequest + 6, "STRT", 4)) {
-    cfg.running = 1;
-  } else if (memcmp(getRequest + 6, "DL", 2) == 0) {
-    cfg.right = 0;
-  } else if (memcmp(getRequest + 6, "DR", 2) == 0) {
-    cfg.right = 1;
-  } else if (memcmp(getRequest + 6, "S100", 4) == 0) {
-    cfg.delay = 40;
-  } else if (memcmp(getRequest + 6, "S75", 3) == 0) {
-    cfg.delay = 60;
-  } else if (memcmp(getRequest + 6, "S50", 3) == 0) {
-    cfg.delay = 80;
-  } else if (memcmp(getRequest + 6, "S25", 3) == 0) {
-    cfg.delay = 100;
-  } else if (memcmp(getRequest + 6, "MST", 3) == 0) {
-    cfg.motor_type = 0;
-  } else if (memcmp(getRequest + 6, "MA", 2) == 0) {
-    cfg.motor_type = 1;
-  }
-
   if (localPort != 80) {
     return (0);
   }
-
   length = SPI_Ethernet_putConstString(HTTPheader);
   length += SPI_Ethernet_putConstString(HTTPMimeTypeHTML);
+
+  /*
+    ST - Stepper
+    AC - Async
+  */
+  if (!memcmp(getRequest + 5, "ST", 2)) {
+    cfg.motor_type = 0;
+  } else if (!memcmp(getRequest + 5, "AC", 2)) {
+    cfg.motor_type = 1;
+  } else {
+    length += SPI_Ethernet_putConstString(BADStatus);
+    return length;
+  }
+
+  // "," symbol
+  if (memcmp(getRequest + 7, ",", 1)) {
+    length += SPI_Ethernet_putConstString(BADStatus);
+    return length;
+  }
+
+  /*
+    R - Right
+    L - Left
+  */
+  if (!memcmp(getRequest + 8, "R", 1)) {
+    cfg.right = 1;
+  } else if (!memcmp(getRequest + 8, "L", 1)) {
+    cfg.right = 0;
+  } else {
+    length += SPI_Ethernet_putConstString(BADStatus);
+    return length;
+  }
+
+   // "," symbol
+  if (memcmp(getRequest + 9, ";", 1)) {
+    length += SPI_Ethernet_putConstString(BADStatus);
+    return length;
+  }
+
+
+  cfg.running = 1;
   length += SPI_Ethernet_putConstString(OKStatus);
   return length;
 }
 
-void HandleMotor() {
+void HandleStepperMotor() {
   int new_port_value = 0b0000;
   if (!cfg.running) {
     cfg.port_value = new_port_value;
-    // cfg.steps_counter = 10;
     return;
   }
   new_port_value = 0b0011;
-  /*
-  if (cfg.steps_counter == 0){
-       cfg.port_value = 0b0000;
-       cfg.steps_counter = 10;
-       cfg.running = 0;
-       return;
-  }
-  */
   switch (cfg.right) {
   case 0:
     new_port_value |= 0b0100;
@@ -134,13 +143,21 @@ void main() {
   SPI_Ethernet_Init(MACAddr, IPAddr, 0x01); // Initialize Ethernet module
   while (1) {
     SPI_Ethernet_doPacket(); // Process next received packet
-    HandleMotor();
-    ++cfg.tick_counter;
-    if (cfg.tick_counter == cfg.delay) {
-      cfg.port_value ^= 0b1000;
-      cfg.tick_counter = 0;
-      //--cfg.steps_counter;
+    if (cfg.running == 0) continue;
+    switch (cfg.motor_type) {
+      case 0:
+          while (cfg.running){
+            HandleStepperMotor();
+            ++cfg.tick_counter;
+            if (cfg.tick_counter == cfg.delay) {
+              cfg.port_value ^= 0b1000;
+              cfg.tick_counter = 0;
+            }
+            PORTB = cfg.port_value;
+          }
+        break;
+      case 1:
+        break;
     }
-    PORTB = cfg.port_value;
   }
 }

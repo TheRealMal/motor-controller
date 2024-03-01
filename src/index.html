@@ -39,21 +39,33 @@
   .active-td {
     background-color: #52efef;
   }
+  .running-task {
+    background-color: #f9e772;
+  }
   .completed-task {
     background-color: #72f984;
   }
+  .failed-task {
+    background-color: #f97672;
+  }
   .remove-button {
-    right: -100%;
+    right: -90px;
     top: 1px;
     position: relative;
     width: 70px;
     height: 19px;
     background-color: #f97672;
   }
+  .run-button {
+    right: -90px;
+    top: 1px;
+    position: relative;
+    width: 70px;
+    height: 19px;
+    background-color: #72f97f;
+  }
   </style>
   <script type="text/javascript">
-    const MaxSpeed = 100;
-    const MinSpeed = 25;
     var config = {
       "id": "",
       "type": "",
@@ -62,29 +74,51 @@
       "angle": "" 
     };
 
-    function sendRequest(body) {
-        let ip = document.querySelector("input[id=ip]").value
-        fetch(`http://${ip}:80/?${body}`, {
-            method: "GET",
-            mode: 'no-cors'
-        })
-    }
     function updateConfig(key, value) {
       config[key] = value;
     }
     function completeTask(id) {
-      document.querySelectorAll("table[id='tasks'] tr")[id + 2].className = "completed-task"
+      let intId = parseInt(id)
+      let el = document.querySelectorAll("table[id='tasks'] tbody")[intId].querySelector("tr")
+      el.className = "completed-task"
+    }
+    function failTask(id) {
+      let intId = parseInt(id)
+      let el = document.querySelectorAll("table[id='tasks'] tbody")[intId].querySelector("tr")
+      el.className = "failed-task"
     }
     function removeTask(id) {
       let intId = parseInt(id)
       document.querySelectorAll("table[id='tasks'] tbody")[intId].remove()
       let updateEls = document.querySelectorAll("table[id='tasks'] tr")
+      if (document.querySelectorAll("table[id='tasks'] tr").length == 4) {
+        return;
+      }
       for (let i = intId + 2; i < document.querySelectorAll("table[id='tasks'] tr").length; i++) {
         let el = updateEls[i].querySelector("td")
         el.id = parseInt(el.id) - 1
         el.querySelector("font").innerText = el.id
-        updateEls[i].querySelector("button").id = el.id
+        updateEls[i].querySelectorAll("button")[0].id = el.id
+        updateEls[i].querySelectorAll("button")[1].id = el.id
       }
+    }
+    function runTask(id){
+      let intId = parseInt(id)
+      let el = document.querySelectorAll("table[id='tasks'] tbody")[intId].querySelector("tr")
+      el.className = "running-task"
+      let motor = el.querySelectorAll("td")[1].innerText === "Stepper" ? "ST" : "AC";
+      let direction = el.querySelectorAll("td")[2].innerText === "Right" ? "R" : "L";
+      let ip = document.querySelector("input[id=ip]").value
+      let st = fetch(`http://${ip}:80/${motor},${direction};`, {
+          method: "GET",
+          mode: 'no-cors'
+      }).then((resp) => {
+        if (resp.ok) {
+          completeTask(id)
+        } else {
+          failTask(id)
+        }
+      })
     }
     function clearTasks(){
       let els = document.querySelectorAll("table[id='tasks'] tbody")
@@ -112,6 +146,7 @@
         <td align=center width="23%">
           <font size=2 color=Black face="verdana" style="position:relative; left: 30%;">${config.angle}</font>
           <button class="remove-button" type="button" id="${config.id}" onclick="removeTask(this.id)">Remove</button>
+          <button class="run-button" type="button" id="${config.id}" onclick="runTask(this.id)">Run</button>
         </td>
       </tr>`
     }
