@@ -42,6 +42,14 @@
   .completed-task {
     background-color: #72f984;
   }
+  .remove-button {
+    left: 98px;
+    top: 1px;
+    position: relative;
+    width: 70px;
+    height: 19px;
+    background-color: #f97672;
+  }
   </style>
   <script type="text/javascript">
     const MaxSpeed = 100;
@@ -65,14 +73,25 @@
       config[key] = value;
     }
     function completeTask(id) {
-      document.querySelectorAll("table[id='tasks'] tr")[id+2].className = "completed-task"
+      document.querySelectorAll("table[id='tasks'] tr")[id + 2].className = "completed-task"
+    }
+    function removeTask(id) {
+      let intId = parseInt(id)
+      document.querySelectorAll("table[id='tasks'] tr")[intId + 2].remove()
+      let updateEls = document.querySelectorAll("table[id='tasks'] tr")
+      for (let i = intId + 2; i < document.querySelectorAll("table[id='tasks'] tr").length; i++) {
+        let el = updateEls[i].querySelector("td")
+        el.id = parseInt(el.id) - 1
+        el.querySelector("font").innerText = el.id
+        updateEls[i].querySelector("button").id = el.id
+      }
     }
     function addButtonClick(){
       config.id = document.querySelectorAll("table[id='tasks'] tr").length - 2
       config.speed = document.querySelector("input[id=speed]").value
       config.angle = document.querySelector("input[id=angle]").value
       document.querySelector("table[id='tasks']").innerHTML += `<tr>
-        <td align=center width="8%">
+        <td align=center width="8%" id="${config.id}">
           <font size=2 color=Black face="verdana">${config.id}</font>
         </td>
         <td align=center width="23%">
@@ -86,7 +105,7 @@
         </td>
         <td align=center width="23%">
           <font size=2 color=Black face="verdana" style="position:relative; left: 30%;">${config.angle}</font>
-          <button type="button" id="config.id" onclick="" style="left:98px; top:1px; position:relative; width: 70px; height: 19px;">Remove</button>
+          <button class="remove-button" type="button" id="${config.id}" onclick="removeTask(this.id)">Remove</button>
         </td>
       </tr>`
     }
