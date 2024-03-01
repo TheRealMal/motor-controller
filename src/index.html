@@ -86,6 +86,12 @@
         updateEls[i].querySelector("button").id = el.id
       }
     }
+    function clearTasks(){
+      let els = document.querySelectorAll("table[id='tasks'] tr")
+      for (let i = 3; i < els.length; i++) {
+        els[i].remove()
+      }
+    }
     function addButtonClick(){
       config.id = document.querySelectorAll("table[id='tasks'] tr").length - 2
       config.speed = document.querySelector("input[id=speed]").value
@@ -194,7 +200,7 @@
         <td align=center colspan=5>
             <button type="button" id="START" onclick="">Start</button>
             <button type="button" id="STOP" onclick="">Stop</button>
-            <button type="button" id="CLEAR" onclick="">Clear</button>
+            <button type="button" id="CLEAR" onclick="clearTasks()">Clear</button>
         </td>
       </tr>
       <tr>
