@@ -102,24 +102,41 @@
         updateEls[i].querySelectorAll("button")[1].id = el.id
       }
     }
-    function runTask(id){
+    function runTask(id) {
       let intId = parseInt(id)
       let el = document.querySelectorAll("table[id='tasks'] tbody")[intId].querySelector("tr")
       el.className = "running-task"
       let motor = el.querySelectorAll("td")[1].innerText === "Stepper" ? "ST" : "AC";
       let direction = el.querySelectorAll("td")[2].innerText === "Right" ? "R" : "L";
       let ip = document.querySelector("input[id=ip]").value
-      let st = fetch(`http://${ip}:80/${motor},${direction};`, {
+      var resp = fetch(`http://${ip}:80/${motor},${direction};`, {
           method: "GET",
           mode: 'no-cors'
-      }).then((resp) => {
-        if (resp.ok) {
-          completeTask(id)
-        } else {
-          failTask(id)
-        }
-      })
+      });
+      // let interval = setInterval(() => {
+      //   console.log(resp);
+      //   if (resp.ok) {
+      //     if (resp.status == 200) {
+      //       completeTask(id)
+      //     } else {
+      //       failTask(id)
+      //     }
+      //     clearInterval(interval)
+      //   }
+      // }, 1000)
     }
+    function stopTasks() {
+      let ip = document.querySelector("input[id=ip]").value
+      fetch(`http://${ip}:80/OFF`, {
+          method: "GET",
+          mode: 'no-cors'
+      });
+      let els = document.querySelectorAll("table[id='tasks'] tbody")
+      for (let i = 1; i < els.length; i++) {
+        els[i].querySelector("tr").className = ""
+      }
+    }
+
     function clearTasks(){
       let els = document.querySelectorAll("table[id='tasks'] tbody")
       for (let i = 1; i < els.length; i++) {
@@ -234,7 +251,7 @@
       <tr>
         <td align=center colspan=5>
             <button type="button" id="START" onclick="">Start</button>
-            <button type="button" id="STOP" onclick="">Stop</button>
+            <button type="button" id="STOP" onclick="stopTasks()">Stop</button>
             <button type="button" id="CLEAR" onclick="clearTasks()">Clear</button>
         </td>
       </tr>
