@@ -71,27 +71,31 @@
       "type": "",
       "direction": "",
       "speed": "",
-      "angle": "" 
+      "angle": ""
     };
 
+    // Update config field
     function updateConfig(key, value) {
       config[key] = value;
     }
+    // Change task row color to green
     function completeTask(id) {
       let intId = parseInt(id)
       let el = document.querySelectorAll("table[id='tasks'] tbody")[intId].querySelector("tr")
       el.className = "completed-task"
     }
+    // Change task row color to red
     function failTask(id) {
       let intId = parseInt(id)
       let el = document.querySelectorAll("table[id='tasks'] tbody")[intId].querySelector("tr")
       el.className = "failed-task"
     }
+    // Remove task from table
     function removeTask(id) {
       let intId = parseInt(id)
       document.querySelectorAll("table[id='tasks'] tbody")[intId].remove()
       let updateEls = document.querySelectorAll("table[id='tasks'] tr")
-      if (document.querySelectorAll("table[id='tasks'] tr").length == 4) {
+      if (updateEls.length == 3) {
         return;
       }
       for (let i = intId + 2; i < document.querySelectorAll("table[id='tasks'] tr").length; i++) {
@@ -102,29 +106,35 @@
         updateEls[i].querySelectorAll("button")[1].id = el.id
       }
     }
+    // Start tasks
+    function startTasks(){
+      let els = document.querySelectorAll("table[id='tasks'] tbody")
+      for (let i = 1; i < els.length; i++) {
+        runTask(i.toString())
+      }
+    }
+    // Send task to PIC
     function runTask(id) {
       let intId = parseInt(id)
       let el = document.querySelectorAll("table[id='tasks'] tbody")[intId].querySelector("tr")
       el.className = "running-task"
       let motor = el.querySelectorAll("td")[1].innerText === "Stepper" ? "ST" : "AC";
       let direction = el.querySelectorAll("td")[2].innerText === "Right" ? "R" : "L";
+      let speed = el.querySelectorAll("td")[3].innerText;
       let ip = document.querySelector("input[id=ip]").value
-      var resp = fetch(`http://${ip}:80/${motor},${direction};`, {
-          method: "GET",
-          mode: 'no-cors'
-      });
-      // let interval = setInterval(() => {
-      //   console.log(resp);
-      //   if (resp.ok) {
-      //     if (resp.status == 200) {
-      //       completeTask(id)
-      //     } else {
-      //       failTask(id)
-      //     }
-      //     clearInterval(interval)
-      //   }
-      // }, 1000)
+
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", `http://${ip}:80/${motor},${direction},${speed};`, true);
+      xhr.onload = function() {
+        if (xhr.status === 200) {
+          completeTask(id)
+        } else {
+          failTask(id)
+        }
+      }
+      xhr.send();
     }
+    // Stop all tasks
     function stopTasks() {
       let ip = document.querySelector("input[id=ip]").value
       fetch(`http://${ip}:80/OFF`, {
@@ -136,13 +146,14 @@
         els[i].querySelector("tr").className = ""
       }
     }
-
+    // Clear tasks table
     function clearTasks(){
       let els = document.querySelectorAll("table[id='tasks'] tbody")
       for (let i = 1; i < els.length; i++) {
         els[i].remove()
       }
     }
+    // Add new task button
     function addButtonClick(){
       config.id = document.querySelectorAll("table[id='tasks'] tr").length - 2
       config.speed = document.querySelector("input[id=speed]").value
@@ -167,7 +178,7 @@
         </td>
       </tr>`
     }
-
+    // Handle motor type button click
     function typeButtonClick(element_id) {
         let tButtons = document.querySelectorAll("td.motor-type");
         for (tb of tButtons) {
@@ -176,6 +187,7 @@
         document.querySelector(`td.motor-type[id=${element_id}]`).className = "motor-type active-td";
         updateConfig("type", element_id)
     }
+    // Handle motor direction button click
     function dirButtonClick(element_id) {
         let tButtons = document.querySelectorAll("td.direction");
         for (tb of tButtons) {
@@ -223,9 +235,9 @@
       </tr>
       <tr>
         <td align=center colspan=2>
-          <font size=2 color=Black face="verdana"><b>Speed:</font>
+          <font size=2 color=Black face="verdana"><b>Clock delay:</font>
           <input type="number" id="speed" name="speed" min=10 step=10 required placeholder="10"/>
-          <font size=2 color=Black face="verdana"><b>RPM</font>
+          <font size=2 color=Black face="verdana"><b></font>
         </td>
       </tr>
       <tr>
@@ -250,7 +262,7 @@
       </tr>
       <tr>
         <td align=center colspan=5>
-            <button type="button" id="START" onclick="">Start</button>
+            <button type="button" id="START" onclick="startTasks()">Start</button>
             <button type="button" id="STOP" onclick="stopTasks()">Stop</button>
             <button type="button" id="CLEAR" onclick="clearTasks()">Clear</button>
         </td>

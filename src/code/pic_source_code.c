@@ -1,5 +1,5 @@
 // Headers definitions
-const char HTTPheader[] = "HTTP/1.1 200 OK\nContent-type:";
+const char HTTPheader[] = "HTTP/1.1 200 OK\nAccess-Control-Allow-Origin:*\nContent-type:";
 const char HTTPMimeTypeHTML[] = "text/html\n\n";
 const char HTTPMimeTypeScript[] = "text/plain\n\n";
 const char OKStatus[] = "OK";
@@ -12,7 +12,7 @@ sfr sbit SPI_Ethernet_CS_Direction at TRISC1_bit;
 
 unsigned char MACAddr[6] = {0x00, 0x14, 0xA5, 0x76, 0x19, 0x3f};
 unsigned char IPAddr[4] = {10, 211, 55, 5};
-unsigned char getRequest[10];
+unsigned char getRequest[20];
 
 typedef struct {
   unsigned canCloseTCP : 1;
@@ -40,7 +40,8 @@ unsigned int SPI_Ethernet_UserTCP(unsigned char *remoteHost,
                                   unsigned int localPort,
                                   unsigned int reqLength, TEthPktFlags *flags) {
   unsigned int length;
-  for (length = 0; length < 10; ++length) {
+  char txt[50];
+  for (length = 0; length < 20; ++length) {
     getRequest[length] = SPI_Ethernet_getByte();
   }
   getRequest[length] = 0;
@@ -91,13 +92,16 @@ unsigned int SPI_Ethernet_UserTCP(unsigned char *remoteHost,
   }
 
    // "," symbol
-  if (memcmp(getRequest + 9, ";", 1)) {
+  if (memcmp(getRequest + 9, ",", 1)) {
     length += SPI_Ethernet_putConstString(BADStatus);
     return length;
   }
 
-
+  cfg.delay = atoi(getRequest + 10);
   cfg.running = 1;
+  
+  IntToStr(cfg.delay, txt);
+  length += SPI_Ethernet_putString(txt);
   length += SPI_Ethernet_putConstString(OKStatus);
   return length;
 }
