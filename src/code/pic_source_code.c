@@ -53,7 +53,11 @@ unsigned int SPI_Ethernet_UserTCP(unsigned char *remoteHost,
   }
   length = SPI_Ethernet_putConstString(HTTPheader);
   length += SPI_Ethernet_putConstString(HTTPMimeTypeHTML);
-
+  if (!memcmp(getRequest + 5, "OFF", 3)) {
+    cfg.running = 0;
+    length += SPI_Ethernet_putConstString(OKStatus);
+    return length;
+  }
   /*
     ST - Stepper
     AC - Async
@@ -146,15 +150,13 @@ void main() {
     if (cfg.running == 0) continue;
     switch (cfg.motor_type) {
       case 0:
-          while (cfg.running){
-            HandleStepperMotor();
-            ++cfg.tick_counter;
-            if (cfg.tick_counter == cfg.delay) {
-              cfg.port_value ^= 0b1000;
-              cfg.tick_counter = 0;
-            }
-            PORTB = cfg.port_value;
+          HandleStepperMotor();
+          ++cfg.tick_counter;
+          if (cfg.tick_counter == cfg.delay) {
+            cfg.port_value ^= 0b1000;
+            cfg.tick_counter = 0;
           }
+          PORTB = cfg.port_value;
         break;
       case 1:
         break;
