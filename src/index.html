@@ -110,7 +110,7 @@
     function startTasks(){
       let els = document.querySelectorAll("table[id='tasks'] tbody")
       for (let i = 1; i < els.length; i++) {
-        runTask(i.toString())
+        setTimeout(runTask, 500 * (i - 1), i.toString());
       }
     }
     // Send task to PIC
@@ -121,11 +121,13 @@
       let motor = el.querySelectorAll("td")[1].innerText === "Stepper" ? "ST" : "AC";
       let direction = el.querySelectorAll("td")[2].innerText === "Right" ? "R" : "L";
       let speed = el.querySelectorAll("td")[3].innerText;
+      let angle = el.querySelectorAll("td")[4].querySelector("font").innerText;
       let ip = document.querySelector("input[id=ip]").value
 
       var xhr = new XMLHttpRequest();
-      xhr.open("GET", `http://${ip}:80/${motor},${direction},${speed};`, true);
+      xhr.open("GET", `http://${ip}:80/${motor},${direction},${speed},${angle}`, true);
       xhr.onload = function() {
+        console.log(xhr.status, xhr.statusText)
         if (xhr.status === 200) {
           completeTask(id)
         } else {
@@ -235,9 +237,9 @@
       </tr>
       <tr>
         <td align=center colspan=2>
-          <font size=2 color=Black face="verdana"><b>Clock delay:</font>
+          <font size=2 color=Black face="verdana"><b>Frequency:</font>
           <input type="number" id="speed" name="speed" min=10 step=10 required placeholder="10"/>
-          <font size=2 color=Black face="verdana"><b></font>
+          <font size=2 color=Black face="verdana"><b>Hz</font>
         </td>
       </tr>
       <tr>

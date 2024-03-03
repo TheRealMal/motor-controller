@@ -57,15 +57,15 @@ File2=SPI
 File3=ADC
 File4=C_Stdlib
 File5=C_Type
-File6=Conversions
-Count=7
+Count=6
 [EXPANDED_NODES]
 0=pic_source_code.mcppi
 Count=1
 [LIB_EXPANDED_NODES]
 0=mikroE Libraries
 1=System Libraries
+108=C_String
 413=SPI_Ethernet
 873=mikroBUS Board Definition API
 874=easypic_v7_P18F45K22
-Count=5
+Count=6
