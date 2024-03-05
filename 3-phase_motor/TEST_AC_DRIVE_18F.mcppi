@@ -1,5 +1,5 @@
 [DEVICE]
-Name=P16F887
+Name=P18F45K22
 Clock=8000000
 [MEMORY_MODEL]
 Value=0
@@ -49,6 +49,4 @@ Count=4
 [EXPANDED_NODES]
 Count=0
 [LIB_EXPANDED_NODES]
-0=mikroE Libraries
-1=System Libraries
-Count=3
+Count=1

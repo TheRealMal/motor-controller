@@ -1,6 +1,20 @@
-#define PWM_MIN_DUTY      80
-#define PWM_START_DUTY    200
+/**************************************************************************************
 
+  Sensorless brushless DC ( BLDC ) motor control with PIC16F887 microcontroller
+  C Code for mikroC PRO for PIC compiler
+  Crystal oscillator used @ 20MHz
+  Configuration words: CONFIG1 = 0x2CD2
+                       CONFIG2 = 0x0700
+  This is a free software with NO WARRANTY.
+  https://simple-circuit.com/
+
+***************************************************************************************/
+
+
+#define PWM_MIN_DUTY      80
+#define PWM_START_DUTY    500
+
+#include <stdint.h>
 
 void AH_BL();
 void AH_CL();
@@ -10,19 +24,19 @@ void CH_AL();
 void CH_BL();
 void bldc_move();
 
-unsigned int bldc_step = 0;
-unsigned int motor_speed, i, j;
+uint8_t bldc_step = 0;
+uint16_t motor_speed, i, j;
 
 void Interrupt()
 {
   // BEMF debounce
-  int j;
+  int8_t j;
   for(j = 0; j < 10; j++) {
     if(bldc_step & 1) {
-      if(!C1OUT_bit)    j -= 1;
+      if(!CM1CON0.F6)    j -= 1;
     }
     else {
-      if(C1OUT_bit)     j -= 1;
+      if(CM1CON0.F6)     j -= 1;
     }
   }
   bldc_move();
@@ -64,7 +78,7 @@ void bldc_move()        // BLDC motor commutation function
 }
 
 // set PWM1 duty cycle function
-void set_pwm_duty(unsigned int pwm_duty)
+void set_pwm_duty(uint16_t pwm_duty)
 {
   CCP1CON = ((pwm_duty << 4) & 0x30) | 0x0C;
   CCPR1L  = pwm_duty >> 2;
@@ -74,7 +88,7 @@ void set_pwm_duty(unsigned int pwm_duty)
 void main()
 {
 
-  ANSEL = 0x10;     // configure AN4 (RA5) pin as analog
+  ANSELA = 0x10;     // configure AN4 (RA5) pin as analog
   PORTD = 0;
   TRISD = 0;
   // ADC module configuration
@@ -95,7 +109,7 @@ void main()
   // Motor start
   set_pwm_duty(PWM_START_DUTY);                 // Set PWM duty cycle
   i = 5000;
-  while(i > 100)
+  while(1)
   {
     j = i;
     while(j--) ;
@@ -159,3 +173,5 @@ void CH_BL()
 {
   PORTD = 0x08;
 }
+
+// End of code.
