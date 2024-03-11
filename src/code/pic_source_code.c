@@ -124,13 +124,13 @@ void bldc_move()        // BLDC motor commutation function
 }
 
 void HandleBLDCMotor() {
-  i = 5000;
-  while(1)
+  int i = cfg.angle;
+  while(i > 0)
   {
     j = i;
     while(j--) ;
     bldc_move();
-    i = i - 50;
+    i = i - 1;
   }
 }
 
@@ -178,6 +178,7 @@ void run() {
     } else if (cfg.motor_type == 1) {
       initBLDC();
       HandleBLDCMotor();
+      emptyCfg();
     }
   }
 }
@@ -295,6 +296,7 @@ unsigned int SPI_Ethernet_UserTCP(unsigned char *remoteHost,
     cfg.angle = (int)((float) cfg.angle / 1.8);
     break;
   case 1:
+    cfg.angle *= 10;
     break;
   }
 
