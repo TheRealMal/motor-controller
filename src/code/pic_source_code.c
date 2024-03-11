@@ -7,6 +7,7 @@ const char FormatError[] = "Wrong command format";
 const char OptionError[] = "Wrong option";
 const char SpeedError[] = "Failed to parse speed";
 const char AngleError[] = "Failed to parse angle";
+
 // Ethernet NIC interface definitions
 sfr sbit SPI_Ethernet_Rst at RC0_bit;
 sfr sbit SPI_Ethernet_CS at RC1_bit;
@@ -16,6 +17,9 @@ sfr sbit SPI_Ethernet_CS_Direction at TRISC1_bit;
 unsigned char MACAddr[6] = {0x00, 0x14, 0xA5, 0x76, 0x19, 0x3f};
 unsigned char IPAddr[4] = {10, 211, 55, 5};
 unsigned char getRequest[20];
+
+unsigned int bldc_step = 0;
+unsigned int motor_speed, i, j;
 
 typedef struct {
   unsigned canCloseTCP : 1;
@@ -48,6 +52,86 @@ void emptyCfg() {
   cfg.is_half_step = 0;
   cfg.steps_counter = 0;
   cfg.port_value = 0;
+}
+
+//
+// BLDC MOTOR
+//
+
+// set PWM1 duty cycle function
+void set_pwm_duty(unsigned int pwm_duty)
+{
+  CCP1CON = ((pwm_duty << 4) & 0x30) | 0x0C;
+  CCPR1L  = pwm_duty >> 2;
+}
+
+void initBLDC() {
+  ANSELA = 0x10;
+  TRISD = 0;
+  PORTD = 0;
+  ADCON0 = 0xD0;
+  ADFM_bit = 0;
+  INTCON = 0xC0;
+  C1IF_bit = 0;
+  CCP1CON = 0x0C;
+  CCPR1L = 0;
+  TMR2IF_bit = 0;
+  T2CON = 0x04;
+  PR2 = 0xFF;
+  set_pwm_duty((unsigned int) cfg.delay);
+}
+
+void bldc_move()        // BLDC motor commutation function
+{
+  switch(bldc_step){
+    case 0:
+      CCP1CON = 0;        // PWM off
+      PORTD   = 0x08;
+      PSTRCON = 0x08;     // PWM output on pin P1D (RD7), others OFF
+      CCP1CON = 0x0C;     // PWM on
+      CM1CON0 = 0xA2;   // Sense BEMF C (pin RA3 positive, RB3 negative)
+      break;
+    case 1:
+      PORTD = 0x04;
+      CM1CON0 = 0xA1;   // Sense BEMF B (pin RA3 positive, RA1 negative)
+      break;
+    case 2:
+      CCP1CON = 0;        // PWM off
+      PORTD   = 0x04;
+      PSTRCON = 0x04;     // PWM output on pin P1C (RD6), others OFF
+      CCP1CON = 0x0C;     // PWM on
+      CM1CON0 = 0xA0;   // Sense BEMF A (pin RA3 positive, RA0 negative)
+      break;
+    case 3:
+      PORTD = 0x10;
+      CM1CON0 = 0xA2;   // Sense BEMF C (pin RA3 positive, RB3 negative)
+      break;
+    case 4:
+      CCP1CON = 0;        // PWM off
+      PORTD   = 0x10;
+      PSTRCON = 0x02;     // PWM output on pin P1B (RD5), others OFF
+      CCP1CON = 0x0C;     // PWM on
+      CM1CON0 = 0xA1;   // Sense BEMF B (pin RA3 positive, RA1 negative)
+      break;
+    case 5:
+      PORTD = 0x08;
+      CM1CON0 = 0xA0;   // Sense BEMF A (pin RA3 positive, RA0 negative)
+      break;
+  }
+  bldc_step++;
+  if(bldc_step >= 6)
+    bldc_step = 0;
+}
+
+void HandleBLDCMotor() {
+  i = 5000;
+  while(1)
+  {
+    j = i;
+    while(j--) ;
+    bldc_move();
+    i = i - 50;
+  }
 }
 
 void HandleStepperMotor() {
@@ -92,7 +176,8 @@ void run() {
         emptyCfg();
       }
     } else if (cfg.motor_type == 1) {
-      return;
+      initBLDC();
+      HandleBLDCMotor();
     }
   }
 }
@@ -182,7 +267,9 @@ unsigned int SPI_Ethernet_UserTCP(unsigned char *remoteHost,
     length += SPI_Ethernet_putConstString(SpeedError);
     return length;
   }
-  cfg.delay = 18512 / cfg.delay;
+  if (!cfg.motor_type) {
+     cfg.delay = 18512 / cfg.delay;
+  }
 
   // Parses angle from request
   freqEnd = strchr(getRequest + 10, ',');
@@ -237,6 +324,7 @@ void main() {
   TRISB = 0x00;
   PORTB = 0b0000;
   ANSELC = 0; // Configure PORTC as digital
+  
   SPI1_Init();                              // Initialize SPI module
   SPI_Ethernet_Init(MACAddr, IPAddr, 0x01); // Initialize Ethernet module
   while (1) {

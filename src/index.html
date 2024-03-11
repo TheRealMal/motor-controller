@@ -109,12 +109,10 @@
     // Start tasks
     function startTasks(){
       let els = document.querySelectorAll("table[id='tasks'] tbody")
-      for (let i = 1; i < els.length; i++) {
-        setTimeout(runTask, 500 * (i - 1), i.toString());
-      }
+      runTask("1", els.length)
     }
     // Send task to PIC
-    function runTask(id) {
+    function runTask(id, lastTask = -1) {
       let intId = parseInt(id)
       let el = document.querySelectorAll("table[id='tasks'] tbody")[intId].querySelector("tr")
       el.className = "running-task"
@@ -130,6 +128,9 @@
         console.log(xhr.status, xhr.statusText)
         if (xhr.status === 200) {
           completeTask(id)
+          if (lastTask !== -1 && intId < lastTask) {
+            runTask((intId + 1).toString(), lastTask)
+          }
         } else {
           failTask(id)
         }
