@@ -75,9 +75,7 @@ void initBLDC() {
   C1IF_bit = 0;
   CCP1CON = 0x0C;
   CCPR1L = 0;
-  TMR2IF_bit = 0;
-  T2CON = 0x04;
-  PR2 = 0xFF;
+
   set_pwm_duty((unsigned int) cfg.delay);
 }
 
