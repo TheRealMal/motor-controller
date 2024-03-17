@@ -1,0 +1,302 @@
+<html>
+<style>
+  input {
+    border: 0;
+    cursor: pointer;
+  }
+  button {
+    width: 100%;
+    background: 0;
+    cursor: pointer;
+  }
+  button[id="STOP"], button[id="CLEAR"], button[id="START"] {
+    margin: 2px 2px 2px 2px;
+    width: 25%;
+  }
+  input {
+    background: 0;
+    border-bottom: 1px solid black;
+    margin-bottom: 8px;
+  }
+  input:focus {
+    outline: none;
+  }
+  input[id=speed] {
+    width: 60px;
+    margin-bottom: 2px;
+    text-align: center;
+  }
+  input[id=angle] {
+    width: 60px;
+    margin-bottom: 2px;
+    text-align: center;
+  }
+  table {
+    background-color: #acffff;
+    border-radius: 5px;
+    width: 500;
+  }
+  .active-td {
+    background-color: #52efef;
+  }
+  .running-task {
+    background-color: #f9e772;
+  }
+  .completed-task {
+    background-color: #72f984;
+  }
+  .failed-task {
+    background-color: #f97672;
+  }
+  .remove-button {
+    right: -90px;
+    top: 1px;
+    position: relative;
+    width: 70px;
+    height: 19px;
+    background-color: #f97672;
+  }
+  .run-button {
+    right: -90px;
+    top: 1px;
+    position: relative;
+    width: 70px;
+    height: 19px;
+    background-color: #72f97f;
+  }
+  </style>
+  <script type="text/javascript">
+    var config = {
+      "id": "",
+      "type": "",
+      "direction": "",
+      "speed": "",
+      "angle": ""
+    };
+
+    // Update config field
+    function updateConfig(key, value) {
+      config[key] = value;
+    }
+    // Change task row color to green
+    function completeTask(id) {
+      let intId = parseInt(id)
+      let el = document.querySelectorAll("table[id='tasks'] tbody")[intId].querySelector("tr")
+      el.className = "completed-task"
+    }
+    // Change task row color to red
+    function failTask(id) {
+      let intId = parseInt(id)
+      let el = document.querySelectorAll("table[id='tasks'] tbody")[intId].querySelector("tr")
+      el.className = "failed-task"
+    }
+    // Remove task from table
+    function removeTask(id) {
+      let intId = parseInt(id)
+      document.querySelectorAll("table[id='tasks'] tbody")[intId].remove()
+      let updateEls = document.querySelectorAll("table[id='tasks'] tr")
+      if (updateEls.length == 3) {
+        return;
+      }
+      for (let i = intId + 2; i < document.querySelectorAll("table[id='tasks'] tr").length; i++) {
+        let el = updateEls[i].querySelector("td")
+        el.id = parseInt(el.id) - 1
+        el.querySelector("font").innerText = el.id
+        updateEls[i].querySelectorAll("button")[0].id = el.id
+        updateEls[i].querySelectorAll("button")[1].id = el.id
+      }
+    }
+    // Start tasks
+    function startTasks(){
+      let els = document.querySelectorAll("table[id='tasks'] tbody")
+      runTask("1", els.length)
+    }
+    // Send task to PIC
+    function runTask(id, lastTask = -1) {
+      let intId = parseInt(id)
+      let el = document.querySelectorAll("table[id='tasks'] tbody")[intId].querySelector("tr")
+      el.className = "running-task"
+      let motor = el.querySelectorAll("td")[1].innerText === "Stepper" ? "ST" : "AC";
+      let direction = el.querySelectorAll("td")[2].innerText === "Right" ? "R" : "L";
+      let speed = el.querySelectorAll("td")[3].innerText;
+      let angle = el.querySelectorAll("td")[4].querySelector("font").innerText;
+      let ip = document.querySelector("input[id=ip]").value
+
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", `http://${ip}:80/${motor},${direction},${speed},${angle}`, true);
+      xhr.onload = function() {
+        console.log(xhr.status, xhr.statusText)
+        if (xhr.status === 200) {
+          completeTask(id)
+          if (lastTask !== -1 && intId < lastTask) {
+            runTask((intId + 1).toString(), lastTask)
+          }
+        } else {
+          failTask(id)
+        }
+      }
+      xhr.send();
+    }
+    // Stop all tasks
+    function stopTasks() {
+      let ip = document.querySelector("input[id=ip]").value
+      fetch(`http://${ip}:80/OFF`, {
+          method: "GET",
+          mode: 'no-cors'
+      });
+      let els = document.querySelectorAll("table[id='tasks'] tbody")
+      for (let i = 1; i < els.length; i++) {
+        els[i].querySelector("tr").className = ""
+      }
+    }
+    // Clear tasks table
+    function clearTasks(){
+      let els = document.querySelectorAll("table[id='tasks'] tbody")
+      for (let i = 1; i < els.length; i++) {
+        els[i].remove()
+      }
+    }
+    // Add new task button
+    function addButtonClick(){
+      config.id = document.querySelectorAll("table[id='tasks'] tr").length - 2
+      config.speed = document.querySelector("input[id=speed]").value
+      config.angle = document.querySelector("input[id=angle]").value
+      document.querySelector("table[id='tasks']").innerHTML += `<tr>
+        <td align=center width="8%" id="${config.id}">
+          <font size=2 color=Black face="verdana">${config.id}</font>
+        </td>
+        <td align=center width="23%">
+          <font size=2 color=Black face="verdana">${config.type}</font>
+        </td>
+        <td align=center width="23%">
+          <font size=2 color=Black face="verdana">${config.direction}</font>
+        </td>
+        <td align=center width="23%">
+          <font size=2 color=Black face="verdana">${config.speed}</font>
+        </td>
+        <td align=center width="23%">
+          <font size=2 color=Black face="verdana" style="position:relative; left: 30%;">${config.angle}</font>
+          <button class="remove-button" type="button" id="${config.id}" onclick="removeTask(this.id)">Remove</button>
+          <button class="run-button" type="button" id="${config.id}" onclick="runTask(this.id)">Run</button>
+        </td>
+      </tr>`
+    }
+    // Handle motor type button click
+    function typeButtonClick(element_id) {
+        let tButtons = document.querySelectorAll("td.motor-type");
+        for (tb of tButtons) {
+            tb.className = "motor-type";
+        }
+        let naming = document.querySelector("form > table:nth-child(1) > tbody > tr:nth-child(6) > td > font > b")
+        let naming_sec = document.querySelectorAll("form > table:nth-child(1) > tbody > tr:nth-child(6) > td > font")[1].querySelector("b")
+        if (element_id === "Async") {
+          naming.innerText = "Speed:"
+          naming_sec.innerText = ""
+        } else {
+          naming.innerText = "Frequency:"
+          naming_sec.innerText = "Hz"
+        }
+        document.querySelector(`td.motor-type[id=${element_id}]`).className = "motor-type active-td";
+        updateConfig("type", element_id)
+    }
+    // Handle motor direction button click
+    function dirButtonClick(element_id) {
+        let tButtons = document.querySelectorAll("td.direction");
+        for (tb of tButtons) {
+            tb.className = "direction";
+        }
+        document.querySelector(`td.direction[id=${element_id}]`).className = "direction active-td";
+        updateConfig("direction", element_id)
+    }
+  </script>
+<body>
+  <form name="input" method="get">
+    <table align=center width=500 border=4>
+      <tr>
+        <td align=center colspan=2>
+            <font size=7 color=Black face="verdana"><b>MOTOR CONTROL</b></font>
+            <label for="ip">IP:</label>
+            <input type="text" id="ip" name="ip" required placeholder="10.211.55.5"/>
+        </td>
+      </tr>
+      <tr>
+        <td align=center colspan=2>
+          <font size=2 color=Black face="verdana"><b>Motor Type</b></font>
+        </td>
+      </tr>
+      <tr>
+        <td align=center width="50%" class="motor-type" id="Stepper">
+            <button type="button" id="Stepper" onclick="typeButtonClick(this.id)">Stepper</button>
+        </td>
+        <td align=center width="50%" class="motor-type" id="Async">
+            <button type="button" id="Async" onclick="typeButtonClick(this.id)">Async</button>
+        </td>
+      </tr>
+      <tr>
+        <td align=center colspan=2>
+          <font size=2 color=Black face="verdana"><b>Direction</b></font>
+        </td>
+      </tr>
+      <tr>
+        <td align=center width="50%" class="direction" id="Left">
+            <button type="button" id="Left" onclick="dirButtonClick(this.id)">Left</button>
+        </td>
+        <td align=center width="50%" class="direction" id="Right">
+            <button type="button" id="Right" onclick="dirButtonClick(this.id)">Right</button>
+        </td>
+      </tr>
+      <tr>
+        <td align=center colspan=2>
+          <font size=2 color=Black face="verdana"><b>Frequency:</b></font>
+          <input type="number" id="speed" name="speed" min=10 step=10 required placeholder="10"/>
+          <font size=2 color=Black face="verdana"><b>Hz</b></font>
+        </td>
+      </tr>
+      <tr>
+        <td align=center colspan=2>
+          <font size=2 color=Black face="verdana"><b>Angle:</b></font>
+          <input type="number" id="angle" name="angle" min=0 required placeholder="1"/>
+          <font size=2 color=Black face="verdana"><b>°</b></font>
+        </td>
+      </tr>
+      <tr>
+        <td align=center width="50%" colspan="2">
+            <button type="button" id="ADD" onclick="addButtonClick()">Add</button>
+        </td>
+      </tr>
+    </table>
+    <br>
+    <table align=center width=500 border=4 id="tasks" text-align="center">
+      <tr>
+        <td align=center colspan=5>
+            <font size=5 color=Black face="verdana"><b>Tasks</b></font>
+        </td>
+      </tr>
+      <tr>
+        <td align=center colspan=5>
+            <button type="button" id="START" onclick="startTasks()">Start</button>
+            <button type="button" id="STOP" onclick="stopTasks()">Stop</button>
+            <button type="button" id="CLEAR" onclick="clearTasks()">Clear</button>
+        </td>
+      </tr>
+      <tr>
+        <td align=center width="8%">
+          <font size=2 color=Black face="verdana"><b>ID</b></font>
+        </td>
+        <td align=center width="23%">
+          <font size=2 color=Black face="verdana"><b>Motor</b></font>
+        </td>
+        <td align=center width="23%">
+          <font size=2 color=Black face="verdana"><b>Direction</b></font>
+        </td>
+        <td align=center width="23%">
+          <font size=2 color=Black face="verdana"><b>Speed</b></font>
+        </td>
+        <td align=center width="23%">
+          <font size=2 color=Black face="verdana"><b>Angle</b></font>
+        </td>
+      </tr>
+    </table>
+  </form>
+</body>
+</html>
