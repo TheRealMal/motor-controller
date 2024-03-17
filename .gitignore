@@ -14,3 +14,4 @@
 *.user.dic
 src/scheme/Project Backups/
 src/Project Backups/
+*.workspace

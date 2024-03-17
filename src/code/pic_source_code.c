@@ -66,16 +66,13 @@ void set_pwm_duty(unsigned int pwm_duty)
 }
 
 void initBLDC() {
-  ANSELA = 0x10;
   TRISD = 0;
   PORTD = 0;
-  ADCON0 = 0xD0;
-  ADFM_bit = 0;
   INTCON = 0xC0;
   C1IF_bit = 0;
   CCP1CON = 0x0C;
   CCPR1L = 0;
-
+  
   set_pwm_duty((unsigned int) cfg.delay);
 }
 
@@ -120,12 +117,12 @@ void bldc_move()        // BLDC motor commutation function
   if(bldc_step >= 6)
     bldc_step = 0;
 }
-
+   
 void HandleBLDCMotor() {
   int i = cfg.angle;
   while(i > 0)
   {
-    j = i;
+    j = cfg.delay;
     while(j--) ;
     bldc_move();
     i = i - 1;
@@ -320,10 +317,11 @@ unsigned int SPI_Ethernet_UserUDP(unsigned char *remoteHost,
     Main program
 */
 void main() {
+  ANSELA = 0x10;
   OSCCON = 0b0111000;
   TRISB = 0x00;
   PORTB = 0b0000;
-  ANSELC = 0; // Configure PORTC as digital
+  ANSELC = 0; // Configure PORTC as digital 
   
   SPI1_Init();                              // Initialize SPI module
   SPI_Ethernet_Init(MACAddr, IPAddr, 0x01); // Initialize Ethernet module

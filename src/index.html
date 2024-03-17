@@ -187,6 +187,15 @@
         for (tb of tButtons) {
             tb.className = "motor-type";
         }
+        let naming = document.querySelector("form > table:nth-child(1) > tbody > tr:nth-child(6) > td > font > b")
+        let naming_sec = document.querySelectorAll("form > table:nth-child(1) > tbody > tr:nth-child(6) > td > font")[1].querySelector("b")
+        if (element_id === "Async") {
+          naming.innerText = "Speed:"
+          naming_sec.innerText = ""
+        } else {
+          naming.innerText = "Frequency:"
+          naming_sec.innerText = "Hz"
+        }
         document.querySelector(`td.motor-type[id=${element_id}]`).className = "motor-type active-td";
         updateConfig("type", element_id)
     }
@@ -238,16 +247,16 @@
       </tr>
       <tr>
         <td align=center colspan=2>
-          <font size=2 color=Black face="verdana"><b>Frequency:</font>
+          <font size=2 color=Black face="verdana"><b>Frequency:</b></font>
           <input type="number" id="speed" name="speed" min=10 step=10 required placeholder="10"/>
-          <font size=2 color=Black face="verdana"><b>Hz</font>
+          <font size=2 color=Black face="verdana"><b>Hz</b></font>
         </td>
       </tr>
       <tr>
         <td align=center colspan=2>
-          <font size=2 color=Black face="verdana"><b>Angle:</font>
+          <font size=2 color=Black face="verdana"><b>Angle:</b></font>
           <input type="number" id="angle" name="angle" min=0 required placeholder="1"/>
-          <font size=2 color=Black face="verdana"><b>°</font>
+          <font size=2 color=Black face="verdana"><b>°</b></font>
         </td>
       </tr>
       <tr>
