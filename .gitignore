@@ -15,3 +15,4 @@
 src/scheme/Project Backups/
 src/Project Backups/
 *.workspace
+*.DS_Store
