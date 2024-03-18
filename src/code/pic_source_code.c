@@ -1,4 +1,4 @@
-// Headers definitions
+// Объявление заголовков и статусов
 const char HTTPheaderErr[] = "HTTP/1.1 400 Bad Request\nAccess-Control-Allow-Origin:*\nContent-type:";
 const char HTTPheader[] = "HTTP/1.1 200 OK\nAccess-Control-Allow-Origin:*\nContent-type:";
 const char HTTPMimeTypeHTML[] = "text/html\n\n";
@@ -8,7 +8,7 @@ const char OptionError[] = "Wrong option";
 const char SpeedError[] = "Failed to parse speed";
 const char AngleError[] = "Failed to parse angle";
 
-// Ethernet NIC interface definitions
+// Интерфейсы для работы с Ethernet
 sfr sbit SPI_Ethernet_Rst at RC0_bit;
 sfr sbit SPI_Ethernet_CS at RC1_bit;
 sfr sbit SPI_Ethernet_Rst_Direction at TRISC0_bit;
@@ -18,14 +18,16 @@ unsigned char MACAddr[6] = {0x00, 0x14, 0xA5, 0x76, 0x19, 0x3f};
 unsigned char IPAddr[4] = {10, 211, 55, 5};
 unsigned char getRequest[20];
 
-unsigned int bldc_step = 0;
+unsigned int async_step = 0;
 unsigned int motor_speed, i, j;
 
+// Структура для работы с Ethernet
 typedef struct {
   unsigned canCloseTCP : 1;
   unsigned isBroadcast : 1;
 } TEthPktFlags;
 
+// Структура текущих конфигураций
 typedef struct {
   int motor_type;
   int running;
@@ -39,8 +41,10 @@ typedef struct {
   int port_value;
 } Config;
 
+// Инициализация конфигурационной переменной
 Config cfg = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
+// Функция для очистки конфигурационной переменной
 void emptyCfg() {
   cfg.motor_type = 0;
   cfg.running = 0;
@@ -54,81 +58,88 @@ void emptyCfg() {
   cfg.port_value = 0;
 }
 
-//
-// BLDC MOTOR
-//
+// ----------------------------------------
+//  Асинхронный мотор
+// ----------------------------------------
 
-// set PWM1 duty cycle function
+// Управления рабочим циклом ШИМа
 void set_pwm_duty(unsigned int pwm_duty)
 {
   CCP1CON = ((pwm_duty << 4) & 0x30) | 0x0C;
   CCPR1L  = pwm_duty >> 2;
 }
 
-void initBLDC() {
+// Функция инициализации выходов для асинхронного двигателя
+void initAsync() {
   TRISD = 0;
   PORTD = 0;
   INTCON = 0xC0;
   C1IF_bit = 0;
   CCP1CON = 0x0C;
   CCPR1L = 0;
-  
   set_pwm_duty((unsigned int) cfg.delay);
 }
 
-void bldc_move()        // BLDC motor commutation function
+// Обработка шагов асинхронного двигателя
+void asyncMove()
 {
-  switch(bldc_step){
+  switch(async_step){
     case 0:
-      CCP1CON = 0;        // PWM off
+      CCP1CON = 0;      // Выкл ШИМ
       PORTD   = 0x08;
-      PSTRCON = 0x08;     // PWM output on pin P1D (RD7), others OFF
-      CCP1CON = 0x0C;     // PWM on
-      CM1CON0 = 0xA2;   // Sense BEMF C (pin RA3 positive, RB3 negative)
+      PSTRCON = 0x08;   // Выход ШИМ на RD7
+      CCP1CON = 0x0C;   // Вкл ШИМ
+      CM1CON0 = 0xA2;   // BEMF C
       break;
     case 1:
       PORTD = 0x04;
-      CM1CON0 = 0xA1;   // Sense BEMF B (pin RA3 positive, RA1 negative)
+      CM1CON0 = 0xA1;   // BEMF B
       break;
     case 2:
-      CCP1CON = 0;        // PWM off
+      CCP1CON = 0;      // Выкл ШИМ
       PORTD   = 0x04;
-      PSTRCON = 0x04;     // PWM output on pin P1C (RD6), others OFF
-      CCP1CON = 0x0C;     // PWM on
-      CM1CON0 = 0xA0;   // Sense BEMF A (pin RA3 positive, RA0 negative)
+      PSTRCON = 0x04;   // Выход ШИМ на RD6
+      CCP1CON = 0x0C;   // Вкл ШИМ
+      CM1CON0 = 0xA0;   // BEMF A
       break;
     case 3:
       PORTD = 0x10;
-      CM1CON0 = 0xA2;   // Sense BEMF C (pin RA3 positive, RB3 negative)
+      CM1CON0 = 0xA2;   // BEMF C
       break;
     case 4:
-      CCP1CON = 0;        // PWM off
+      CCP1CON = 0;      // Выкл ШИМ
       PORTD   = 0x10;
-      PSTRCON = 0x02;     // PWM output on pin P1B (RD5), others OFF
-      CCP1CON = 0x0C;     // PWM on
-      CM1CON0 = 0xA1;   // Sense BEMF B (pin RA3 positive, RA1 negative)
+      PSTRCON = 0x02;   // Выход ШИМ на RD5
+      CCP1CON = 0x0C;   // Вкл ШИМ
+      CM1CON0 = 0xA1;   // BEMF B
       break;
     case 5:
       PORTD = 0x08;
-      CM1CON0 = 0xA0;   // Sense BEMF A (pin RA3 positive, RA0 negative)
+      CM1CON0 = 0xA0;   // BEMF A
       break;
   }
-  bldc_step++;
-  if(bldc_step >= 6)
-    bldc_step = 0;
+  async_step++;
+  if(async_step >= 6)
+    async_step = 0;
 }
-   
-void HandleBLDCMotor() {
+
+// Обработчик движения асинхронным потором
+void HandleAsyncMotor() {
   int i = cfg.angle;
   while(i > 0)
   {
     j = cfg.delay;
     while(j--) ;
-    bldc_move();
+    asyncMove();
     i = i - 1;
   }
 }
 
+// ----------------------------------------
+//  Шаговый мотор
+// ----------------------------------------
+
+// Обработчик движения шаговым потором
 void HandleStepperMotor() {
   int new_port_value = 0b0000;
   if (cfg.running) {
@@ -149,6 +160,8 @@ void HandleStepperMotor() {
   cfg.port_value = new_port_value;
 }
 
+// Обработка команды на основе полученной
+// конфигурации
 void run() {
   while (cfg.running) {
     if (cfg.motor_type == 0) {
@@ -171,17 +184,14 @@ void run() {
         emptyCfg();
       }
     } else if (cfg.motor_type == 1) {
-      initBLDC();
-      HandleBLDCMotor();
+      initAsync();
+      HandleAsyncMotor();
       emptyCfg();
     }
   }
 }
 
-/*
-    TCP routine. This is where the user request to toggle LED A or LED B are
-   processed
-*/
+// Обработчик Ethernet TCP запросов
 unsigned int SPI_Ethernet_UserTCP(unsigned char *remoteHost,
                                   unsigned int remotePort,
                                   unsigned int localPort,
@@ -210,8 +220,8 @@ unsigned int SPI_Ethernet_UserTCP(unsigned char *remoteHost,
     return length;
   }
   /*
-    ST - Stepper
-    AC - Async
+    ST - Шаговый
+    AC - Асинхронный
   */
   if (!memcmp(getRequest + 5, "ST", 2)) {
     cfg.motor_type = 0;
@@ -224,7 +234,7 @@ unsigned int SPI_Ethernet_UserTCP(unsigned char *remoteHost,
     return length;
   }
 
-  // "," symbol
+  // "," символ
   if (memcmp(getRequest + 7, ",", 1)) {
     length = SPI_Ethernet_putConstString(HTTPheaderErr);
     length += SPI_Ethernet_putConstString(HTTPMimeTypeHTML);
@@ -233,8 +243,8 @@ unsigned int SPI_Ethernet_UserTCP(unsigned char *remoteHost,
   }
 
   /*
-    R - Right
-    L - Left
+    R - Вправо
+    L - Влево
   */
   if (!memcmp(getRequest + 8, "R", 1)) {
     cfg.right = 1;
@@ -247,7 +257,7 @@ unsigned int SPI_Ethernet_UserTCP(unsigned char *remoteHost,
     return length;
   }
 
-   // "," symbol
+   // "," символ
   if (memcmp(getRequest + 9, ",", 1)) {
     length = SPI_Ethernet_putConstString(HTTPheaderErr);
     length += SPI_Ethernet_putConstString(HTTPMimeTypeHTML);
@@ -255,7 +265,7 @@ unsigned int SPI_Ethernet_UserTCP(unsigned char *remoteHost,
     return length;
   }
 
-  // Parses frequency from request
+  // Достает число из запроса, которое отвечает за скорость
   cfg.delay = atoi(getRequest + 10);
   if (cfg.delay == 0) {
     length = SPI_Ethernet_putConstString(HTTPheaderErr);
@@ -267,7 +277,7 @@ unsigned int SPI_Ethernet_UserTCP(unsigned char *remoteHost,
      cfg.delay = 18512 / cfg.delay;
   }
 
-  // Parses angle from request
+  // Достает число из запроса, которое отвечает за угол поворота
   freqEnd = strchr(getRequest + 10, ',');
   angleStart = (int)(freqEnd - getRequest) + 1;
   cfg.angle = atoi(getRequest + angleStart);
@@ -303,9 +313,7 @@ unsigned int SPI_Ethernet_UserTCP(unsigned char *remoteHost,
   return length;
 }
 
-/*
-    UDP routine. Must be declared even though it is not used
-*/
+// Обработчик Ethernet UDP запросов; Нужен для корректной работы
 unsigned int SPI_Ethernet_UserUDP(unsigned char *remoteHost,
                                   unsigned int remotePort,
                                   unsigned int destPort, unsigned int reqLength,
@@ -313,19 +321,16 @@ unsigned int SPI_Ethernet_UserUDP(unsigned char *remoteHost,
   return (0);
 }
 
-/*
-    Main program
-*/
+// Основная функция
 void main() {
   ANSELA = 0x10;
   OSCCON = 0b0111000;
   TRISB = 0x00;
   PORTB = 0b0000;
-  ANSELC = 0; // Configure PORTC as digital 
+  ANSELC = 0;
   
-  SPI1_Init();                              // Initialize SPI module
-  SPI_Ethernet_Init(MACAddr, IPAddr, 0x01); // Initialize Ethernet module
+  SPI1_Init();                              // Инициализация SPI модуля
+  SPI_Ethernet_Init(MACAddr, IPAddr, 0x01); // Инициализация Ethernet модуля
   while (1) {
-    SPI_Ethernet_doPacket(); // Process next received packet
-  }
+    SPI_Ethernet_doPacket(); // Обработка следующего пакета
 }
