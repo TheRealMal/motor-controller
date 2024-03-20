@@ -124,7 +124,7 @@ void asyncMove()
 }
 
 // Обработчик движения асинхронным потором
-void HandleAsyncMotor() {
+void handle_async() {
   int i = cfg.angle;
   while(i > 0)
   {
@@ -140,7 +140,7 @@ void HandleAsyncMotor() {
 // ----------------------------------------
 
 // Обработчик движения шаговым потором
-void HandleStepperMotor() {
+void handle_step() {
   int new_port_value = 0b0000;
   if (cfg.running) {
     new_port_value |= 0b0001;
@@ -165,7 +165,7 @@ void HandleStepperMotor() {
 void run() {
   while (cfg.running) {
     if (cfg.motor_type == 0) {
-      HandleStepperMotor();
+      handle_step();
       ++cfg.tick_counter;
       if (cfg.tick_counter >= cfg.delay) {
         cfg.port_value ^= 0b1000;
@@ -185,7 +185,7 @@ void run() {
       }
     } else if (cfg.motor_type == 1) {
       initAsync();
-      HandleAsyncMotor();
+      handle_async();
       emptyCfg();
     }
   }
