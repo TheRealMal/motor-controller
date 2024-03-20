@@ -191,27 +191,9 @@ void run() {
   }
 }
 
-// Обработчик Ethernet TCP запросов
-unsigned int SPI_Ethernet_UserTCP(unsigned char *remoteHost,
-                                  unsigned int remotePort,
-                                  unsigned int localPort,
-                                  unsigned int reqLength, TEthPktFlags *flags) {
-  unsigned int length;
+unsigned int parse_command(unsigned int length) {
   char* freqEnd;
   int angleStart;
-  
-  for (length = 0; length < 20; ++length) {
-    getRequest[length] = SPI_Ethernet_getByte();
-  }
-  getRequest[length] = 0;
-
-  if (memcmp(getRequest, "GET /", 5)) {
-    return (0);
-  }
-  if (localPort != 80) {
-    return (0);
-  }
-  
   if (!memcmp(getRequest + 5, "OFF", 3)) {
     emptyCfg();
     length = SPI_Ethernet_putConstString(HTTPheader);
@@ -304,7 +286,31 @@ unsigned int SPI_Ethernet_UserTCP(unsigned char *remoteHost,
     cfg.angle *= 10;
     break;
   }
+  return 0;
+}
 
+// Обработчик Ethernet TCP запросов
+unsigned int SPI_Ethernet_UserTCP(unsigned char *remoteHost,
+                                  unsigned int remotePort,
+                                  unsigned int localPort,
+                                  unsigned int reqLength, TEthPktFlags *flags) {
+  unsigned int length;
+  
+  for (length = 0; length < 20; ++length) {
+    getRequest[length] = SPI_Ethernet_getByte();
+  }
+  getRequest[length] = 0;
+
+  if (memcmp(getRequest, "GET /", 5)) {
+    return (0);
+  }
+  if (localPort != 80) {
+    return (0);
+  }
+  length = parse_command(length);
+  if (length != 0) {
+    return length
+  }
   cfg.running = 1;
   run();
   length = SPI_Ethernet_putConstString(HTTPheader);
@@ -333,4 +339,5 @@ void main() {
   SPI_Ethernet_Init(MACAddr, IPAddr, 0x01); // Инициализация Ethernet модуля
   while (1) {
     SPI_Ethernet_doPacket(); // Обработка следующего пакета
+  }
 }
